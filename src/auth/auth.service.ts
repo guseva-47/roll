@@ -9,24 +9,23 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
-    async validateUser(username: string, pass: string): Promise<any> {
-      const user = await this.usersService.findOne(username);
-      if (user && user.password === pass) {
-        const { password, ...result } = user;
-        return result;
-      }
-      return null;
-    }
+  // async validateUser(username: string, pass: string): Promise<any> {
+  //   const user = await this.usersService.findOne(username);
+  //   if (user && user.password === pass) {
+  //     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  //     const { password, ...result } = user;
+  //     return result;
+  //   }
+  //   return null;
+  // }
 
-    async login(user: any) {
-      const payload = { username: user.username, sub: user.userId };
-      return {
-        access_token: this.jwtService.sign(payload),
-      };
-    }
+  // TODO видимо сюда нужно передавать некое DTO?? 
+  // так как кроме информации необходимой для создания jwt токена, нужна еще некоторая инфа из гугль аккаунта
+  // здесь же нужно создовать пользователя, т.е. проверять существует он в базе данных или нет, если нет то нужно создать через UserService
+  async login(username: string, userId: string): Promise<any> {
+    const payload = { username: username, sub: userId };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
+  }
 }
-
-// local.strategy validate
-// auth.servisce
-// user.servisce
-// app.controller
