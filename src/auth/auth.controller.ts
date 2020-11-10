@@ -1,11 +1,11 @@
 import { Controller, Get, Request, Response, UseGuards, HttpStatus } from '@nestjs/common';
-import { GoogleAuthGuard} from './guard/google-auth.guard';
+import { GoogleAuthGuard } from './guard/google-auth.guard';
 import { AuthService } from './auth.service';
 
 
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) {}
+    constructor(private authService: AuthService) { }
 
     @Get("/google")
     @UseGuards(GoogleAuthGuard)
@@ -19,6 +19,6 @@ export class AuthController {
 
         const jwtToken = this.authService.login(req.user)
 
-        res.redirect('http://localhost:3000/profile')
+        res.redirect('/profile')
     }
 }
