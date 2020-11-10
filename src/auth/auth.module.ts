@@ -9,23 +9,18 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { AuthController } from './auth.controller';
 
-// const jwtConstant = process.env.JWT_CONSTANT;
-// const jwtTokenPeriod = process.env.JWT_TOKEN_PERIOD;
-
-const jwtConstant="secretsecret"
-const jwtTokenPeriod="60s"
 
 @Module({
-  imports: [
-    UsersModule,
-    PassportModule,
-    JwtModule.register({
-      secret: jwtConstant,
-      signOptions: { expiresIn: jwtTokenPeriod },
-    }),
-  ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, GoogleStrategy],
-  exports: [AuthService],
-  controllers: [AuthController],
+    imports: [
+        UsersModule,
+        PassportModule,
+        JwtModule.register({
+            secret: process.env.JWT_CONSTANT,
+            signOptions: { expiresIn: process.env.JWT_TOKEN_PERIOD },
+        }),
+    ],
+    providers: [AuthService, LocalStrategy, JwtStrategy, GoogleStrategy],
+    exports: [AuthService],
+    controllers: [AuthController],
 })
-export class AuthModule {}
+export class AuthModule { }
