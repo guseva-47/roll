@@ -8,12 +8,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { AuthController } from './auth.controller';
+import { configModule } from 'src/configure.root';
 
 
 @Module({
     imports: [
         UsersModule,
         PassportModule,
+        configModule,
         JwtModule.register({
             secret: process.env.JWT_CONSTANT,
             signOptions: { expiresIn: process.env.JWT_TOKEN_PERIOD },

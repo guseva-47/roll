@@ -19,6 +19,6 @@ export class AuthController {
 
         const jwtToken = this.authService.login(req.user)
 
-        res.redirect('/profile')
+        res.redirect('/ok')
     }
 }

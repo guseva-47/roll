@@ -26,14 +26,13 @@ export class AppController {
         return 'не удалось авторизироваться(';
     }
 
-    // @Get('profile')
-    // @UseGuards(JwtAuthGuard)
-    // getProfile(@Request() req) {
-    //     console.log('Авторизировано!')
-    //     console.log(req.user)
-    //     return req.user;
-    //     return 'авторизировано!';
-    // }
+    @Get('ok')
+    @UseGuards(JwtAuthGuard)
+    getOk(@Request() req) {
+        console.log('Авторизировано!')
+        console.log(req.user)
+        return req.user;
+    }
 
     @Get('allUsers')
     async getAll() {
