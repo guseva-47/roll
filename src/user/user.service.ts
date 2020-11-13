@@ -1,78 +1,76 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDto } from './dto/user.dto';
 import { profilePrivatType } from './enum/profile-privet-type.enum';
+import { BadId } from './exseption/bad-id.exception';
+import { UserNotFound } from './exseption/user-undefind.exception';
 import { IUser } from './interface/user.interface';
 
 @Injectable()
 export class UserService {
-   constructor(@InjectModel('User') private readonly userModel: Model<IUser>){}
+    constructor(@InjectModel('User') private readonly userModel: Model<IUser>) { }
 
-   async createUser(createUserDto: CreateUserDto): Promise<IUser> {
+    async createUser(createUserDto: CreateUserDto): Promise<IUser> {
 
-      if ( await this.isExist(createUserDto)) throw new BadRequestException();
-      
-      const createdUser = new this.userModel(createUserDto);
-      return await createdUser.save();
-   }
+        if (await this.isExist(createUserDto)) throw new BadRequestException();
 
-   async findByCreateUserDto(createUserDto: CreateUserDto): Promise<IUser> {
+        const createdUser = new this.userModel(createUserDto);
+        return await createdUser.save();
+    }
 
-      const email = createUserDto.email;
-      const oauth2Source = createUserDto.oauth2Source;
+    async findByCreateUserDto(createUserDto: CreateUserDto): Promise<IUser> {
 
-      return await (await this.userModel.findOne({email: email, oauth2Source: oauth2Source})).execPopulate();
-   }
+        const email = createUserDto.email;
+        const oauth2Source = createUserDto.oauth2Source;
 
-   async isExist(createUserDto: CreateUserDto): Promise<boolean> {
+        return await (await this.userModel.findOne({ email: email, oauth2Source: oauth2Source })).execPopulate();
+    }
 
-      return await this.userModel.exists(
-         {
-            email: createUserDto.email,
-            oauth2Source: createUserDto.oauth2Source,         
-         }
-      );
-   }
+    async isExist(createUserDto: CreateUserDto): Promise<boolean> {
 
-   async updateProfile(userDto: UserDto): Promise<IUser> {
+        return await this.userModel.exists(
+            {
+                email: createUserDto.email,
+                oauth2Source: createUserDto.oauth2Source,
+            }
+        );
+    }
 
-      userDto.lastActiveAt = new Date();
-      return await (await this.userModel.findByIdAndUpdate(userDto._id, userDto)).execPopulate();
-   }
+    async _updateProfile(userDto: UserDto): Promise<IUser> {
 
-   async getUser(idMe: string, idOther?: string): Promise<IUser> {
-      if (!idOther)
-         return (await this.userModel.findById(idMe)).execPopulate();
+        userDto.lastActiveAt = new Date();
+        return await (await this.userModel.findByIdAndUpdate(userDto._id, userDto)).execPopulate();
+    }
 
-      const userOther = await (await this.userModel.findById(idOther)).execPopulate();
+    async getUser(idMe: string, idOther?: string): Promise<IUser> {
+        if (!Types.ObjectId.isValid(idMe)) throw new BadId;
+        if (idOther && !Types.ObjectId.isValid(idOther)) throw new BadId;
 
-      if (userOther.profilePrivatType === profilePrivatType.closed && !userOther.subscribers.includes(idMe)) 
-          throw new BadRequestException;
-      
-      return (await this.userModel.findById(idOther)).execPopulate();
-   }
+        if (!idOther) {
+            const userPromise = await this.userModel.findById(idMe).orFail(new UserNotFound);
+            return await userPromise.execPopulate();
+        }
 
-  
-   async allUsers(): Promise<any> {
-      // const ids = ["5f9db481d5aac30d2094c5a5", "5f99efcb69487b339ceed48f"]
-      // const result = new Array<IUser>();
+        const userPromise = await this.userModel.findById(idOther).orFail(new UserNotFound);
+        const userOther = await userPromise.execPopulate();
 
-      // // todo порционный вывод
-      // await Promise.all(ids.map(async id => {
-      //    const model = await this.userModel.findById(id)
-      //    result.push(model);
-      // }))
+        if (userOther.profilePrivatType === profilePrivatType.closed && !userOther.subscribers.includes(idMe))
+            throw new ForbiddenException;
 
-      // return result;
-      
-      return await this.userModel.find().exec();      
-   }
+        return userOther;
+    }
 
-   async deleteAllUsers(): Promise<any> {
 
-      return await this.userModel.find().remove().exec();
-   }
+    async allUsers(): Promise<any> {
+
+        return await this.userModel.find().exec();
+    }
+
+    async deleteAllUsers(): Promise<any> {
+
+        return await this.userModel.find().remove().exec();
+    }
 }

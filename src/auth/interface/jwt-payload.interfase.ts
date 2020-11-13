@@ -1,5 +1,5 @@
 export interface IJwtPayload {
-    userId: string;
+    id: string;
     email: string;
   }
   

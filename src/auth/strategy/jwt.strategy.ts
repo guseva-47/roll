@@ -8,7 +8,7 @@ import { IJwtPayload } from '../interface/jwt-payload.interfase';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor() {
-        console.log('jwt secretOrKey = ' + process.env.JWT_CONSTANT + ' !!!!!!!!!!!!!!!!!!!!')
+
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
@@ -17,7 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: IJwtPayload): Promise<IJwtPayload> {
-        console.log(payload);
-        return { userId: payload.userId, email: payload.email };
+
+        return { id: payload.id, email: payload.email };
     }
 }

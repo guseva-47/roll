@@ -29,8 +29,6 @@ export class AppController {
     @Get('ok')
     @UseGuards(JwtAuthGuard)
     getOk(@Request() req) {
-        console.log('Авторизировано!')
-        console.log(req.user)
         return req.user;
     }
 
@@ -49,9 +47,10 @@ export class AppController {
     async getProfile(@Param('id') idSomeUser: string, @Request() req) {
 
         const idMe = req.user.id
+
         if (idMe === idSomeUser)
             return this.userService.getUser(idMe);
-
+        
         return this.userService.getUser(idMe, idSomeUser);
     }
 
@@ -61,6 +60,6 @@ export class AppController {
 
         const idMe = req.user.id
         if (idMe !== userDto._id) throw new BadRequestException();
-        return this.userService.updateProfile(userDto)
+        return this.userService._updateProfile(userDto)
     }
 }
