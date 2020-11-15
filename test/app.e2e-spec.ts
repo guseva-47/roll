@@ -78,7 +78,7 @@ describe('AppController (e2e)', () => {
     const otherUser = {
         jwtToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmYjE2NTAxYjMwNGU2NDY0NDFjZTJkYiIsImVtYWlsIjoibGV2aXNob2tAZ21haWwuY29tIiwiaWF0IjoxNjA1NDY3MjM5LCJleHAiOjE2MDU2ODMyMzl9.olikPf6Sh-rk75EHI9d2NugtApSmxyYVUzzIUgXiXtA',
         id: '5fb16501b304e646441ce2db',
-        email: 'levishok@mail.ru',
+        email: 'levishok@gmail.com',
     }
     // todo добавить название дискрайба
     describe('', () => {
@@ -101,12 +101,12 @@ describe('AppController (e2e)', () => {
             })
         })
 
-        // it('/:id (GET) another user\'s profile', async (done) => {
-        //     await getProfile(otherUser.id, me.jwtToken).then(response => {
-        //         if (response.body.email != otherUser.email) done.fail(`Unexpected (${response.body.email}) email.`);
-        //         done();
-        //     })
-        // })
+        it('/:id (GET) another user\'s profile', async (done) => {
+            await getProfile(otherUser.id, me.jwtToken).then(response => {
+                if (response.body.email != otherUser.email) done.fail(`Unexpected (${response.body.email}) email.`);
+                done();
+            })
+        })
 
         it('/:id (GET) the profile of a non-existent user', async () => {
             const id = '5fae59d7c4a4f05a98e23377'
@@ -116,7 +116,7 @@ describe('AppController (e2e)', () => {
                 .expect(404)
         })
 
-        it(':id (GET) invalide user id', async () => {
+        it('/:id (GET) invalide user id', async () => {
             const id = '1'
             await request(app.getHttpServer())
                 .get('/' + id)
@@ -141,7 +141,7 @@ describe('AppController (e2e)', () => {
             done();
         })
 
-        it(':id (PUT) edit someone else\'s profile', async () => {
+        it('/:id (PUT) edit someone else\'s profile', async () => {
             const res = await getProfile(otherUser.id, otherUser.jwtToken)
 
             const email = 'email@ail.ail'
@@ -156,7 +156,7 @@ describe('AppController (e2e)', () => {
                 .expect(400)
         })
 
-        it(':id (GET) closed user\'s profile', async (done) => {
+        it('/:id (GET) closed user\'s profile', async (done) => {
 
             // отредактировать профиль другого пользователя так, чтобы он был закрытым
             const res = await getProfile(otherUser.id, otherUser.jwtToken)
