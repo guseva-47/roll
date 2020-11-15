@@ -44,12 +44,14 @@ export class UserFriendsService {
    
    // подписаться на другого пользователя
     async subscribe(idMe: string, idSomeUser: string): Promise<IUser> {
+
         if (!Types.ObjectId.isValid(idMe)) throw new BadId;
         if (!Types.ObjectId.isValid(idSomeUser)) throw new BadId;
 
-        let userMe = await this.userModel.findById(idMe).orFail(new UserNotFound);
+        let userMe = await this.userModel.findById(idMe).orFail(new Error(`userMe не найден idMe = ${idMe}`));
         userMe = await userMe.execPopulate();
-        let userOther = await this.userModel.findById(idSomeUser);
+
+        let userOther = await this.userModel.findById(idSomeUser).orFail(new Error(`someUser не найден idSomeUser = ${idSomeUser}`));
         userOther = await userOther.execPopulate();
   
         if (userOther.profilePrivatType === profilePrivatType.open)
@@ -125,10 +127,10 @@ export class UserFriendsService {
         if (userFrom === userTo) throw new BadRequestException();
 
         if (userFrom.subscriptions.includes(userTo._id) && userTo.subscribers.includes(userFrom._id))
-        return [userFrom, userTo];
+            return [userFrom, userTo];
 
         if (userFrom.subscriptions.includes(userTo._id) || userTo.subscribers.includes(userFrom._id))
-        throw new BadRequestException();
+            throw new BadRequestException();
 
         userFrom.subscriptions.push(userTo._id);
         userTo.subscribers.push(userFrom._id);

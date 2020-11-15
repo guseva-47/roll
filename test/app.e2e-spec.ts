@@ -184,36 +184,70 @@ describe('AppController (e2e)', () => {
         })
     });
 
-    // describe('testing user freinds controller', () => {
-    //     async function subscribe(otherUserId: string, jwtToken: string) {
-    //         return request(app.getHttpServer())
-    //         .post('/sub')
-    //         .set('Authorization', 'Bearer ' + jwtToken)
-    //         .send(otherUserId)
-    //         .set('Accept', 'application/json')
-    //         .expect(200)
-    //     }
+    describe('testing user freinds controller', () => {
+        
+        async function subscribe(otherUserId: string, jwtToken: string) {
+            return request(app.getHttpServer())
+                .post('/sub')
+                .set('Authorization', 'Bearer ' + jwtToken)
+                .send({id: otherUserId})
+                .set('Accept', 'application/json')
+                .expect(201)
+        }
 
-    //     it('/sub (POST) subscribe to otherUser (open profile)', async (done) => {
-    //         let user: IUser = (await getProfile(otherUser.id, otherUser.jwtToken)).body
-    //         //if (user.profilePrivatType != profilePrivatType.closed) done.fail('Profile must be open');
-    //         // await subscribe(otherUser.id, me.jwtToken).then(async response => {
-    //         //     const isSubscription: boolean = response.body.subscriptions.includes(otherUser.id);
+        it('/sub (POST) subscribe to otherUser (open profile)', async (done) => {
+            const userMe = (await getProfile(me.id, me.jwtToken)).body
 
-    //         //     user = (await getProfile(otherUser.id, otherUser.jwtToken)).body
-    //         //     const isSubscriber: boolean =  user.subscribers.includes(me.id)
+            const userOther = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+            if (userOther.profilePrivatType != profilePrivatType.open) done.fail('Profile must be open');
+            
+            await subscribe(otherUser.id, me.jwtToken).then(async response => {
 
-    //         //     //return isSubscriber && isSubscription
-    //         //     return true
-    //         // })
-    //     });
+                const newUserMe: IUser = response.body;
+                const isSubscription: boolean = newUserMe.subscriptions.includes(otherUser.id);
 
-    //     // it('/sub (POST) subscribe to otherUser (closed profile)', async () => {
-    //     //     await subscribe(otherUser.id, me.jwtToken).then(response => {
-    //     //         response.body.subscriptions.includes(otherUser.id);
-    //     //     })
-    //     // });
-    // });
+                const newUserOther: IUser = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+                const isSubscriber: boolean =  newUserOther.subscribers.includes(me.id)
+
+                //возврат профилей в прежнее состояние
+                await editProfile(userMe, me.id, me.jwtToken)
+                await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+
+                if (!isSubscription || !isSubscriber) 
+                    done.fail(`isSubscription = ${isSubscription} and isSubscriber = ${isSubscriber}`)
+            })
+
+            done();
+        });
+
+        it('/sub (POST) subscribe to otherUser (closed profile)', async (done) => {
+            const userMeOld = (await getProfile(me.id, me.jwtToken)).body
+
+            const userOther = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+            const newUserOther = {...userOther}
+            newUserOther.profilePrivatType = profilePrivatType.closed
+            editProfile(newUserOther, otherUser.id, otherUser.jwtToken)
+            
+            await subscribe(otherUser.id, me.jwtToken).then(async response => {
+                const newUserMe: IUser = response.body;
+                const isSubscription: boolean = newUserMe.subscriptions.includes(otherUser.id)
+                const isSendedRequest: boolean = newUserMe.subscrReqsFromMe.includes(otherUser.id)
+
+                const newUserOther: IUser = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+                const isSubscriber: boolean =  newUserOther.subscribers.includes(me.id)
+                const isResivedRequest: boolean = newUserOther.subscrReqsToMe.includes(me.id)
+
+                //возврат профилей в прежнее состояние
+                await editProfile(userMeOld, me.id, me.jwtToken)
+                await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+
+                if (isSubscription || isSubscriber) done.fail(`isSubscription = ${isSubscription} and isSubscriber = ${isSubscriber}`)
+                if (!isSendedRequest || !isResivedRequest) done.fail(`isSendedRequest = ${isSendedRequest} and isResivedRequest = ${isResivedRequest}`)
+            })
+
+            done();
+        });
+    });
 
     afterEach(async () => {
         await app.close();

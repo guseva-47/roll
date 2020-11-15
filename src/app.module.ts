@@ -6,6 +6,7 @@ import { UsersModule } from './user/user.module';
 import { AppController } from './app.controller';
 import { TabletopModule } from './tabletop/tabletop.module';
 import { configModule } from './configure.root';
+import { UserFriendsController } from './user/user-friends.controller';
 
 const environment = process.env.NODE_ENV || 'development';
 const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/nest-write'
@@ -25,7 +26,7 @@ const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/nest-write'
         AuthModule,
         UsersModule,
     ],
-    controllers: [AppController]
+    controllers: [AppController, UserFriendsController]
 })
 
 export class AppModule { }

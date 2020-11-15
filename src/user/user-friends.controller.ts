@@ -7,13 +7,12 @@ export class UserFriendsController {
   constructor(
     private friendsService: UserFriendsService,
     ) {}
-    
-    @Post('sub')
-    @UseGuards(JwtAuthGuard)
-    async subscribe(@Body() idSomeUSer: string, @Request() req) {
-        const idMe = req.user.id;
-        return this.friendsService.subscribe(idMe, idSomeUSer);
 
+    @Post('/sub')
+    @UseGuards(JwtAuthGuard)
+    async subscribe(@Body() idSomeUser: { id:string }, @Request() req) {
+        const idMe = req.user.id;
+        return this.friendsService.subscribe(idMe, idSomeUser.id);
     }
 
     @Post('unsub')
