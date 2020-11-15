@@ -7,6 +7,21 @@ export class UserFriendsController {
   constructor(
     private friendsService: UserFriendsService,
     ) {}
+    
+    @Post('sub')
+    @UseGuards(JwtAuthGuard)
+    async subscribe(@Body() idSomeUSer: string, @Request() req) {
+        const idMe = req.user.id;
+        return this.friendsService.subscribe(idMe, idSomeUSer);
+
+    }
+
+    @Post('unsub')
+    @UseGuards(JwtAuthGuard)
+    async unSubscribe(@Body() idSomeUSer: string, @Request() req) {
+        const idMe = req.user.id;
+        return this.friendsService.unSubscribe(idMe, idSomeUSer);
+    }
 
     @Get(':id/subscribers')
     @UseGuards(JwtAuthGuard)
@@ -26,21 +41,6 @@ export class UserFriendsController {
           return await this.friendsService.getSubscriptions(idMe);
         
         return await this.friendsService.getSubscriptions(idMe, idSomeUser);
-    }
-
-    @Post('sub')
-    @UseGuards(JwtAuthGuard)
-    async subscribe(@Body() idSomeUSer: string, @Request() req) {
-        const idMe = req.user.id;
-        return this.friendsService.subscribe(idMe, idSomeUSer);
-
-    }
-
-    @Post('unsub')
-    @UseGuards(JwtAuthGuard)
-    async unSubscribe(@Body() idSomeUSer: string, @Request() req) {
-        const idMe = req.user.id;
-        return this.friendsService.unSubscribe(idMe, idSomeUSer);
     }
 
     @Post('approvesub')
