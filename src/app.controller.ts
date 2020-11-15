@@ -1,13 +1,11 @@
 import { BadRequestException, Controller, Get, Param, Put, Request, Body, Response, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
-import { AuthService } from './auth/auth.service';
 import { UserService } from './user/user.service';
 import { UserDto } from './user/dto/user.dto';
 
 @Controller()
 export class AppController {
     constructor(
-        private authService: AuthService,
         private userService: UserService,
     ) { }
 
@@ -58,7 +56,7 @@ export class AppController {
     @UseGuards(JwtAuthGuard)
     async editProfile(@Body() userDto: UserDto, @Request() req) {
 
-        const idMe = req.user.id
+        const idMe = req.user.id;
         if (idMe !== userDto._id) throw new BadRequestException();
         return this.userService._updateProfile(userDto)
     }
