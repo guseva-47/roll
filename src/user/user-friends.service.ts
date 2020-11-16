@@ -48,10 +48,10 @@ export class UserFriendsService {
         if (!Types.ObjectId.isValid(idMe)) throw new BadId;
         if (!Types.ObjectId.isValid(idSomeUser)) throw new BadId;
 
-        let userMe = await this.userModel.findById(idMe).orFail(new Error(`userMe не найден idMe = ${idMe}`));
+        let userMe = await this.userModel.findById(idMe).orFail(new UserNotFound);
         userMe = await userMe.execPopulate();
 
-        let userOther = await this.userModel.findById(idSomeUser).orFail(new Error(`someUser не найден idSomeUser = ${idSomeUser}`));
+        let userOther = await this.userModel.findById(idSomeUser).orFail(new UserNotFound);
         userOther = await userOther.execPopulate();
   
         if (userOther.profilePrivatType === profilePrivatType.open)
@@ -79,12 +79,17 @@ export class UserFriendsService {
     // одобрить заявку на подписку (если у вас закрытый профиль)
     async approveSubscriber(idMe: string, idSomeUser: string): Promise<IUser> {
   
-        let userMe = await (await this.userModel.findById(idMe)).execPopulate();
-        let userOther = await (await this.userModel.findById(idSomeUser)).execPopulate();
-  
-        [userOther, userMe] = this._sub(userOther, userMe);
+        let userMe = await this.userModel.findById(idMe).orFail(new UserNotFound);
+        userMe = await userMe.execPopulate();
+
+        if (userMe.profilePrivatType !== profilePrivatType.closed) throw new BadRequestException;
+
+        let userOther = await this.userModel.findById(idSomeUser).orFail(new UserNotFound);
+        userOther = await userOther.execPopulate();
   
         [userOther, userMe] = this._unSendSubRequest(userOther, userMe);
+
+        [userOther, userMe] = this._sub(userOther, userMe);
   
         await userOther.save();
         return await userMe.save();
@@ -93,8 +98,13 @@ export class UserFriendsService {
     // неодобрить заявку на подписку (если у вас закрытый профиль)
     async unApproveSubscriber(idMe: string, idSomeUser: string): Promise<IUser> {
   
-        let userMe = await (await this.userModel.findById(idMe)).execPopulate();
-        let userOther = await (await this.userModel.findById(idSomeUser)).execPopulate();
+        let userMe = await this.userModel.findById(idMe).orFail(new UserNotFound);
+        userMe = await userMe.execPopulate();
+
+        if (userMe.profilePrivatType !== profilePrivatType.closed) throw new BadRequestException;
+
+        let userOther = await this.userModel.findById(idSomeUser).orFail(new UserNotFound);
+        userOther = await userOther.execPopulate();
   
         [userOther, userMe] = this._unSendSubRequest(userOther, userMe);
   
@@ -124,16 +134,16 @@ export class UserFriendsService {
     // todo названия
     private _sub(userFrom: IUser, userTo: IUser): [IUser, IUser] {
 
-        if (userFrom === userTo) throw new BadRequestException();
+        if (userFrom.id === userTo.id) throw new BadRequestException();
 
-        if (userFrom.subscriptions.includes(userTo._id) && userTo.subscribers.includes(userFrom._id))
+        if (userFrom.subscriptions.includes(userTo.id) && userTo.subscribers.includes(userFrom.id))
             return [userFrom, userTo];
 
-        if (userFrom.subscriptions.includes(userTo._id) || userTo.subscribers.includes(userFrom._id))
-            throw new BadRequestException();
+        if (userFrom.subscriptions.includes(userTo.id) || userTo.subscribers.includes(userFrom.id))
+            throw new BadRequestException('||');
 
-        userFrom.subscriptions.push(userTo._id);
-        userTo.subscribers.push(userFrom._id);
+        userFrom.subscriptions.push(userTo.id);
+        userTo.subscribers.push(userFrom.id);
 
         return [userFrom, userTo];
     }
@@ -142,13 +152,13 @@ export class UserFriendsService {
 
         if (userFrom === userTo) throw new BadRequestException();
 
-        let indx = userFrom.subscriptions.findIndex(userTo._id)
+        let indx = userFrom.subscriptions.findIndex(current => current == userTo.id)
         if (indx === -1) throw new BadRequestException();
-        userFrom.subscriptions.splice(indx, indx);
+        userFrom.subscriptions.splice(indx, 1);
 
-        indx = userTo.subscribers.findIndex(userFrom._id)
+        indx = userTo.subscribers.findIndex(current => current == userFrom.id)
         if (indx === -1) throw new BadRequestException();
-        userTo.subscribers.splice(indx, indx);
+        userTo.subscribers.splice(indx, 1);
 
         return [userFrom, userTo];
     }
@@ -157,29 +167,35 @@ export class UserFriendsService {
 
         if (userFrom === userTo) throw new BadRequestException();
 
-        if (userFrom.subscrReqsFromMe.includes(userTo._id) && userTo.subscrReqsToMe.includes(userFrom._id))
-        return [userFrom, userTo];
+        if (userFrom.subscrReqsFromMe.includes(userTo.id) && userTo.subscrReqsToMe.includes(userFrom.id))
+            return [userFrom, userTo];
 
-        if (userFrom.subscrReqsFromMe.includes(userTo._id) || userTo.subscrReqsToMe.includes(userFrom._id))
-        throw new BadRequestException();
+        if (userFrom.subscriptions.includes(userTo.id) && userTo.subscribers.includes(userFrom.id))
+            return [userFrom, userTo];
 
-        userFrom.subscrReqsFromMe.push(userTo._id);
-        userTo.subscrReqsToMe.push(userFrom._id);
+        if (userFrom.subscrReqsFromMe.includes(userTo.id) || userTo.subscrReqsToMe.includes(userFrom.id)) {
+            if (!userFrom.subscrReqsFromMe.includes(userTo.id)) userFrom.subscrReqsFromMe.push(userTo.id);
+            if (!userTo.subscrReqsToMe.includes(userFrom.id)) userTo.subscrReqsToMe.push(userFrom.id);
+
+            return [userFrom, userTo];
+        }
+
+        userFrom.subscrReqsFromMe.push(userTo.id);
+        userTo.subscrReqsToMe.push(userFrom.id);
 
         return [userFrom, userTo];
     }
 
     private _unSendSubRequest(reqFrom: IUser, reqTo: IUser): [IUser, IUser] {
+        if (reqFrom.id === reqTo.id) throw new BadRequestException();
 
-        if (reqFrom === reqTo) throw new BadRequestException();
-
-        let indx = reqFrom.subscrReqsFromMe.findIndex(reqTo._id)
+        let indx = reqFrom.subscrReqsFromMe.findIndex(current => current == reqTo.id)
         if (indx === -1) throw new BadRequestException();
-        reqFrom.subscriptions.splice(indx, indx);
+        reqFrom.subscrReqsFromMe.splice(indx, 1);
 
-        indx = reqTo.subscrReqsToMe.findIndex(reqFrom._id)
+        indx = reqTo.subscrReqsToMe.findIndex(current => current == reqFrom.id)
         if (indx === -1) throw new BadRequestException();
-        reqTo.subscribers.splice(indx, indx);
+        reqTo.subscrReqsToMe.splice(indx, 1);
 
         return [reqFrom, reqTo];
     }
