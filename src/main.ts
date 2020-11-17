@@ -1,32 +1,13 @@
 import { NestFactory } from '@nestjs/core';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { DocumentBuilder } from '@nestjs/swagger/dist/document-builder';
 import { SwaggerModule } from '@nestjs/swagger/dist/swagger-module';
 import { AppModule } from './app.module';
-import { WinstonModule } from 'nest-winston';
-import * as winston from 'winston';
+
 
 async function bootstrap() {
-    const loggerConfig = {
-        logger: WinstonModule.createLogger({
-            level: 'debug',
-            handleExceptions: true,
-            format: winston.format.combine(
-                winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-                winston.format.colorize(),
-                winston.format.printf(({ level, timestamp, context, message }) =>
-                    `[${level}] ${timestamp} [${context}]: ${message}`
-                )
-            ),
-            transports: [
-                new winston.transports.Console(),
-                new winston.transports.File({
-                    filename: 'logs/debug.log',
-                    format: winston.format.uncolorize()
-                })
-            ],
-        })
-    };
-    const app = await NestFactory.create(AppModule, loggerConfig);
+    const app = await NestFactory.create(AppModule);
+    app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
     const options = new DocumentBuilder()
         .setTitle('Cats example')
