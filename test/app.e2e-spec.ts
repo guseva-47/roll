@@ -111,12 +111,12 @@ describe('AppController (e2e)', () => {
     });
 
     const me = {
-        jwtToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmYjE2NGU1YjMwNGU2NDY0NDFjZTJkYSIsImVtYWlsIjoiZ3VzZXZhMDc5N0BtYWlsLnJ1IiwiaWF0IjoxNjA1NDYxMjIxLCJleHAiOjE2MDU2NzcyMjF9.BvbtIUiR1KI_NvRmiZohAXhe8nMfgGnaUOQGp5bglJ8',
+        jwtToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmYjE2NGU1YjMwNGU2NDY0NDFjZTJkYSIsImVtYWlsIjoiZ3VzZXZhMDc5N0BtYWlsLnJ1IiwiaWF0IjoxNjA1NjQwNDYyLCJleHAiOjE2MDU4NTY0NjJ9.k4JxnkcqLj2NcoNPK3WWLgMtaOJFExgn6XmmSN84Kyo',
         id: '5fb164e5b304e646441ce2da',
         email: 'guseva0797@mail.ru',
     }
     const otherUser = {
-        jwtToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmYjE2NTAxYjMwNGU2NDY0NDFjZTJkYiIsImVtYWlsIjoibGV2aXNob2tAZ21haWwuY29tIiwiaWF0IjoxNjA1NDY3MjM5LCJleHAiOjE2MDU2ODMyMzl9.olikPf6Sh-rk75EHI9d2NugtApSmxyYVUzzIUgXiXtA',
+        jwtToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmYjE2NTAxYjMwNGU2NDY0NDFjZTJkYiIsImVtYWlsIjoibGV2aXNob2tAZ21haWwuY29tIiwiaWF0IjoxNjA1NjQwNTA5LCJleHAiOjE2MDU4NTY1MDl9.Ha5ldLtVSQp7QXVbtX4_TJPhV7VqBzAUJj2gE5EuHs0',
         id: '5fb16501b304e646441ce2db',
         email: 'levishok@gmail.com',
     }
@@ -650,6 +650,136 @@ describe('AppController (e2e)', () => {
             
             done();
         });
+
+        it('/:id/subscribers (GET) subscribers of otherUser', async (done) => {
+            const userMe = deepCopyUser((await getProfile(me.id, me.jwtToken)).body)
+            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            
+            await subscribe(otherUser.id, me.jwtToken);
+            await request(app.getHttpServer())
+                .get('/' + otherUser.id + '/subscribers')
+                .set('Authorization', 'Bearer ' + me.jwtToken)
+                .expect(200)
+                .then(response => {
+                    const users = response.body
+                    const indx = users.findIndex(current => current._id  === me.id)
+                    if (indx == -1) done.fail();
+                })
+
+            //возврат профилей в прежнее состояние
+            await editProfile(userMe, me.id, me.jwtToken)
+            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            
+            done();
+        });
+
+        it('/:id/subscribers (GET) subscribers of otherUser with closed profile', async (done) => {
+            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+
+            const newUserOther = deepCopyUser(userOther)
+            newUserOther.profilePrivatType = profilePrivatType.closed
+            await editProfile(newUserOther, otherUser.id, otherUser.jwtToken)              
+            
+            await request(app.getHttpServer())
+                .get('/' + otherUser.id + '/subscribers')
+                .set('Authorization', 'Bearer ' + me.jwtToken)
+                .expect(403)
+
+            //возврат профилей в прежнее состояние
+            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+
+            done();
+        });
+
+        it('/:id/subscribers and /:id/subscriptions (GET) subscribers and subscriptions of otherUser with closed profile if your a subsriber', async (done) => {
+            const userMe = deepCopyUser((await getProfile(me.id, me.jwtToken)).body)
+            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+
+            await subscribe(otherUser.id, me.jwtToken)
+
+            const newUserOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            newUserOther.profilePrivatType = profilePrivatType.closed
+            await editProfile(newUserOther, otherUser.id, otherUser.jwtToken)              
+            
+            await request(app.getHttpServer())
+                .get('/' + otherUser.id + '/subscribers')
+                .set('Authorization', 'Bearer ' + me.jwtToken)
+                .expect(200)
+            
+            await request(app.getHttpServer())
+                .get('/' + otherUser.id + '/subscriptions')
+                .set('Authorization', 'Bearer ' + me.jwtToken)
+                .expect(200)
+
+            //возврат профилей в прежнее состояние
+            await editProfile(userMe, me.id, me.jwtToken)
+            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+
+            done();
+        });
+
+        it('/:id/subscriptions (GET) subscriptions of myself', async (done) => {
+            const userMe = deepCopyUser((await getProfile(me.id, me.jwtToken)).body)
+            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            
+            await subscribe(otherUser.id, me.jwtToken);
+            await request(app.getHttpServer())
+                .get('/' + me.id + '/subscriptions')
+                .set('Authorization', 'Bearer ' + me.jwtToken)
+                .expect(200)
+                .then(response => {
+                    const users = response.body
+                    const indx = users.findIndex(current => current._id  === otherUser.id)
+                    if (indx == -1) done.fail();
+                })
+
+            //возврат профилей в прежнее состояние
+            await editProfile(userMe, me.id, me.jwtToken)
+            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            
+            done();
+        });
+
+        it('/:id/subscriptions (GET) subscriptions of otherUser', async (done) => {
+            const userMe = deepCopyUser((await getProfile(me.id, me.jwtToken)).body)
+            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            
+            await subscribe(me.id, otherUser.jwtToken);
+            await request(app.getHttpServer())
+                .get('/' + otherUser.id + '/subscriptions')
+                .set('Authorization', 'Bearer ' + me.jwtToken)
+                .expect(200)
+                .then(response => {
+                    const users = response.body
+                    const indx = users.findIndex(current => current._id  === me.id)
+                    if (indx == -1) done.fail();
+                })
+
+            //возврат профилей в прежнее состояние
+            await editProfile(userMe, me.id, me.jwtToken)
+            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            
+            done();
+        });
+
+        it('/:id/subscriptions (GET) subscriptions of otherUser with closed profile', async (done) => {
+            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+
+            const newUserOther = deepCopyUser(userOther)
+            newUserOther.profilePrivatType = profilePrivatType.closed
+            await editProfile(newUserOther, otherUser.id, otherUser.jwtToken)              
+            
+            await request(app.getHttpServer())
+                .get('/' + otherUser.id + '/subscriptions')
+                .set('Authorization', 'Bearer ' + me.jwtToken)
+                .expect(403)
+
+            //возврат профилей в прежнее состояние
+            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+
+            done();
+        });
+
     });
    
     afterEach(async () => {

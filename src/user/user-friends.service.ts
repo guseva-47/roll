@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
@@ -15,29 +15,29 @@ export class UserFriendsService {
    async getSubscribers(idMe: string, idSomeUser?: string): Promise<Array<IUser>> {
         
         if (!idSomeUser || idMe === idSomeUser) {
-            const userMe = await (await this.userModel.findById(idMe)).execPopulate();
+            const userMe = await this._usersCheck(idMe)
             return this._getUsersById(userMe.subscribers);
         }
 
-        const userOther = await (await this.userModel.findById(idSomeUser)).execPopulate();
-
-        if (userOther.profilePrivatType === profilePrivatType.closed && !userOther.subscribers.includes(idMe)) 
-            throw new BadRequestException;
+        const userOther = await this._usersCheck(idSomeUser)
         
+        if (userOther.profilePrivatType === profilePrivatType.closed && !userOther.subscribers.find(curr => curr == idMe)) 
+            throw new ForbiddenException;
+
         return this._getUsersById(userOther.subscribers);
    }
 
    // все подписки пользователя
    async getSubscriptions(idMe: string, idSomeUser?: string): Promise<Array<IUser>> {
         if (!idSomeUser || idMe === idSomeUser) {
-            const userMe = await (await this.userModel.findById(idMe)).execPopulate();
+            const userMe = await this._usersCheck(idMe);
             return this._getUsersById(userMe.subscriptions);
         }
 
-        const userOther = await (await this.userModel.findById(idSomeUser)).execPopulate();
+        const userOther = await this._usersCheck(idSomeUser);
 
         if (userOther.profilePrivatType === profilePrivatType.closed && !userOther.subscribers.includes(idMe)) 
-            throw new BadRequestException;
+            throw new ForbiddenException;
         
         return this._getUsersById(userOther.subscriptions);
    }
@@ -49,9 +49,9 @@ export class UserFriendsService {
         let userOther: IUser = await this._usersCheck(idSomeUser);
   
         if (userOther.profilePrivatType === profilePrivatType.open)
-           [userMe, userOther] = this._sub(userMe, userOther)
+           [userMe, userOther] = this._sub(userMe, userOther);
         else
-           [userMe, userOther] = this._sendSubRequest(userMe, userOther)
+           [userMe, userOther] = this._sendSubRequest(userMe, userOther);
 
         await userOther.save();
         return await userMe.save();
@@ -190,10 +190,9 @@ export class UserFriendsService {
     }
 
     private async _getUsersById(usersId: Array<string>): Promise<Array<IUser>> {
-
         const result = []
         await Promise.all(usersId.map(async id => {
-            const model = await this.userModel.findById(id);
+            const model: IUser = await this.userModel.findById(id);
             if (model) result.push(model);
         }))
 
