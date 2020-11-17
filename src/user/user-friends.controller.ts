@@ -8,6 +8,20 @@ export class UserFriendsController {
     private friendsService: UserFriendsService,
     ) {}
 
+    @Post('/sub')
+    @UseGuards(JwtAuthGuard)
+    async subscribe(@Body() someUser: { id:string }, @Request() req) {
+        const idMe = req.user.id;
+        return this.friendsService.subscribe(idMe, someUser.id);
+    }
+
+    @Post('/unsub')
+    @UseGuards(JwtAuthGuard)
+    async unSubscribe(@Body()someUser: { id:string }, @Request() req) {
+        const idMe = req.user.id;
+        return this.friendsService.unSubscribe(idMe, someUser.id);
+    }
+
     @Get(':id/subscribers')
     @UseGuards(JwtAuthGuard)
     async getSubscribers(@Param('id') idSomeUser: string, @Request() req) {
@@ -28,40 +42,25 @@ export class UserFriendsController {
         return await this.friendsService.getSubscriptions(idMe, idSomeUser);
     }
 
-    @Post('sub')
-    @UseGuards(JwtAuthGuard)
-    async subscribe(@Body() idSomeUSer: string, @Request() req) {
-        const idMe = req.user.id;
-        return this.friendsService.subscribe(idMe, idSomeUSer);
-
-    }
-
-    @Post('unsub')
-    @UseGuards(JwtAuthGuard)
-    async unSubscribe(@Body() idSomeUSer: string, @Request() req) {
-        const idMe = req.user.id;
-        return this.friendsService.unSubscribe(idMe, idSomeUSer);
-    }
-
     @Post('approvesub')
     @UseGuards(JwtAuthGuard)
-    async approveSubscribe(@Body() idSomeUSer: string, @Request() req) {
+    async approveSubscribe(@Body() someUser: { id:string }, @Request() req) {
         const idMe = req.user.id;
-        return this.friendsService.approveSubscriber(idMe, idSomeUSer);
+        return this.friendsService.approveSubscriber(idMe, someUser.id);
     }
 
     @Post('unapprovesub')
     @UseGuards(JwtAuthGuard)
-    async unApproveSubscribe(@Body() idSomeUSer: string, @Request() req) {
+    async unApproveSubscribe(@Body() someUser: { id:string }, @Request() req) {
         const idMe = req.user.id;
-        return this.friendsService.unApproveSubscriber(idMe, idSomeUSer);
+        return this.friendsService.unApproveSubscriber(idMe, someUser.id);
     }
 
     @Delete('sub')
     @UseGuards(JwtAuthGuard)
-    async deleteSubscriber(@Body() idSomeUSer: string, @Request() req) {
+    async deleteSubscriber(@Body() someUser: { id:string }, @Request() req) {
         const idMe = req.user.id;
-        return this.friendsService.deleteSubscriber(idMe, idSomeUSer);
+        return this.friendsService.deleteSubscriber(idMe, someUser.id);
     }
 
 }

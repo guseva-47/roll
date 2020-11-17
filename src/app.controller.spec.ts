@@ -19,9 +19,6 @@ describe('AppController', () => {
     //     // appController = moduleRef.get<AppController>(AppController);
     // });
 
-    it('test of test', () => expect(1).toBe(1));
-
-
     // describe('getHello', () => {
     //     it('should return "hello"', async () => {
     //         expect(appController.getHello()).toBe('hello')

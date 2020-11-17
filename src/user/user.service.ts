@@ -26,7 +26,8 @@ export class UserService {
         const email = createUserDto.email;
         const oauth2Source = createUserDto.oauth2Source;
 
-        return await (await this.userModel.findOne({ email: email, oauth2Source: oauth2Source })).execPopulate();
+        const user = await this.userModel.findOne({ email: email, oauth2Source: oauth2Source }).orFail(new UserNotFound);
+        return await user.execPopulate();
     }
 
     async isExist(createUserDto: CreateUserDto): Promise<boolean> {
@@ -42,7 +43,8 @@ export class UserService {
     async _updateProfile(userDto: UserDto): Promise<IUser> {
 
         userDto.lastActiveAt = new Date();
-        return await (await this.userModel.findByIdAndUpdate(userDto._id, userDto)).execPopulate();
+        const user = await this.userModel.findByIdAndUpdate(userDto._id, userDto, { new: true }).orFail(new UserNotFound);
+        return await user.execPopulate();
     }
 
     async getUser(idMe: string, idOther?: string): Promise<IUser> {

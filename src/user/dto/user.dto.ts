@@ -29,7 +29,8 @@ export class UserDto {
 
     subscribers: Array<string>;
     subscriptions: Array<string>;
-    applicationsToSubscribers: Array<string>;
+    subscrReqsToMe: Array<string>;
+    subscrReqsFromMe: Array<string>;
+
     ignoreUsers: Array<string>;
-    applicationsToSubscriptions: Array<string>;
 }
