@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Param, Put, Request, Body, Response, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, Put, Request, Body, Response, UseGuards, LoggerService, Logger, Inject } from '@nestjs/common';
 import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
 import { AuthService } from './auth/auth.service';
 import { UserService } from './user/user.service';
@@ -9,10 +9,14 @@ export class AppController {
     constructor(
         private authService: AuthService,
         private userService: UserService,
-    ) { }
+        @Inject(Logger) private readonly logger: LoggerService
+    ) {
+        this.logger.log('>>>> qqqqqqqqqq <<<<')
+    }
 
     @Get()
     getHello(): string {
+        this.logger.log('hello - /')
         return 'hello';
     }
 
@@ -50,7 +54,7 @@ export class AppController {
 
         if (idMe === idSomeUser)
             return this.userService.getUser(idMe);
-        
+
         return this.userService.getUser(idMe, idSomeUser);
     }
 

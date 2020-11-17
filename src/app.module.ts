@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthModule } from './auth/auth.module';
@@ -7,10 +7,10 @@ import { AppController } from './app.controller';
 import { TabletopModule } from './tabletop/tabletop.module';
 import { configModule } from './configure.root';
 
-const environment = process.env.NODE_ENV || 'development';
 const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/nest-write'
 
 @Module({
+    providers: [Logger],
     imports: [
         configModule,
         MongooseModule.forRoot(
@@ -26,5 +26,4 @@ const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/nest-write'
     ],
     controllers: [AppController]
 })
-
 export class AppModule { }
