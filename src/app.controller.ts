@@ -5,9 +5,10 @@ import { UserDto } from './user/dto/user.dto';
 
 @Controller()
 export class AppController {
+    private readonly logger: LoggerService = new Logger(AppController.name)
+
     constructor(
-        private userService: UserService,
-        @Inject(Logger) private readonly logger: LoggerService
+        private userService: UserService
     ) {
         this.logger.log('>>>> qqqqqqqqqq <<<<')
     }
