@@ -1,16 +1,23 @@
-import { BadRequestException, Controller, Get, Param, Put, Request, Body, Response, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, Put, Request, Body, Response, UseGuards, Logger } from '@nestjs/common';
 import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
 import { UserService } from './user/user.service';
 import { UserDto } from './user/dto/user.dto';
 
 @Controller()
 export class AppController {
+    private logger = new Logger(AppController.name);
     constructor(
         private userService: UserService,
     ) { }
 
+    // @Get()
+    // getHello(): string {
+    //     return 'hello';
+    // }
+
     @Get()
     getHello(): string {
+        this.logger.log('/hello')
         return 'hello';
     }
 

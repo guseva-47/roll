@@ -15,7 +15,7 @@ export class UserFriendsController {
         return this.friendsService.subscribe(idMe, someUser.id);
     }
 
-    @Post('unsub')
+    @Post('/unsub')
     @UseGuards(JwtAuthGuard)
     async unSubscribe(@Body()someUser: { id:string }, @Request() req) {
         const idMe = req.user.id;
