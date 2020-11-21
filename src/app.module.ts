@@ -9,10 +9,9 @@ import { AppController } from './app.controller';
 import { TabletopModule } from './tabletop/tabletop.module';
 import { configModule } from './configure.root';
 import { UserFriendsController } from './user/user-friends.controller';
-
+import { UserTabletopsController } from './user/user-tabletops.controller';
 
 const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/nest-write'
-
 
 @Module({
     imports: [
@@ -46,8 +45,9 @@ const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/nest-write'
         TabletopModule,
         AuthModule,
         UsersModule,
+        TabletopModule,
     ],
-    controllers: [AppController, UserFriendsController],
+    controllers: [AppController, UserFriendsController, UserTabletopsController],
     providers: [Logger]
 })
 export class AppModule { }

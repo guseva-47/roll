@@ -1,15 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { AppModule } from '../src/app.module';
 import { configModule } from 'src/configure.root';
 import { UserDto } from 'src/user/dto/user.dto';
 import { profilePrivatType } from 'src/user/enum/profile-privet-type.enum';
 
 import { IUser } from 'src/user/interface/user.interface';
+import { meUserTestData, otherUserTestData } from './data';
 
 describe('AppController (e2e)', () => {
     let app: INestApplication;
+    const me = meUserTestData;
+    const otherUser = otherUserTestData;
 
     const nonExistenId = '5fae59d7c4a4f05a98e23377'
     async function editProfile(userDto: UserDto, userId: string, jwtToken: string): Promise<request.Response> {
@@ -73,153 +76,6 @@ describe('AppController (e2e)', () => {
                 userDtoMe.profilePrivatType = profilePrivatType.open
                 await editProfile(userDtoMe, me.id, me.jwtToken)
             }
-        })
-    });
-
-    describe('simplest test for test', () => {
-        it('/ (GET)', async () => {
-            await request(app.getHttpServer())
-                .get('/')
-                .expect(200)
-                .expect('hello');
-        });
-    });
-
-    describe('redirecting to google for login', () => {
-
-        it('/login (GET)', async () => {
-            await request(app.getHttpServer())
-                .get('/login')
-                .expect(302)
-                .expect('location', '/auth/google')
-        });
-
-        it('/auth/google (GET)', async () => {
-            await request(app.getHttpServer())
-                .get('/auth/google')
-                .expect(302)
-                .expect('location', /https:\/\/accounts\.google\.com\/o\/oauth2\/v2\/auth*/)
-        });
-
-        it('/login (GET) with redirect', async () => {
-            await request(app.getHttpServer())
-                .get('/login')
-                .expect(302)
-                .redirects(1)
-                .expect(302)
-        });
-    });
-
-    const me = {
-        jwtToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmYjE2NGU1YjMwNGU2NDY0NDFjZTJkYSIsImVtYWlsIjoiZ3VzZXZhMDc5N0BtYWlsLnJ1IiwiaWF0IjoxNjA1NjQwNDYyLCJleHAiOjE2MDU4NTY0NjJ9.k4JxnkcqLj2NcoNPK3WWLgMtaOJFExgn6XmmSN84Kyo',
-        id: '5fb164e5b304e646441ce2da',
-        email: 'guseva0797@mail.ru',
-    }
-    const otherUser = {
-        jwtToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmYjE2NTAxYjMwNGU2NDY0NDFjZTJkYiIsImVtYWlsIjoibGV2aXNob2tAZ21haWwuY29tIiwiaWF0IjoxNjA1NjQwNTA5LCJleHAiOjE2MDU4NTY1MDl9.Ha5ldLtVSQp7QXVbtX4_TJPhV7VqBzAUJj2gE5EuHs0',
-        id: '5fb16501b304e646441ce2db',
-        email: 'levishok@gmail.com',
-    }
-    // todo добавить название дискрайба
-    describe('', () => {
-
-        it('/ok (GET)', async (done) => {
-            await request(app.getHttpServer())
-                .get('/ok')
-                .set('Authorization', 'Bearer ' + me.jwtToken)
-                .expect(200)
-                .then(response => {
-                    if (response.body.email !== me.email) done.fail(`Unexpected (${response.body.email}) email.`)
-                    done();
-                })
-        });
-
-        it('/:id (GET) profile', async (done) => {
-            await getProfile(me.id, me.jwtToken).then(response => {
-                if (response.body.email !== me.email) done.fail(`Unexpected (${response.body.email}) email.`);
-                done();
-            })
-        })
-
-        it('/:id (GET) another user\'s profile', async (done) => {
-            await getProfile(otherUser.id, me.jwtToken).then(response => {
-                if (response.body.email !== otherUser.email) done.fail(`Unexpected (${response.body.email}) email.`);
-                done();
-            })
-        })
-
-        it('/:id (GET) the profile of a non-existent user', async () => {
-            await request(app.getHttpServer())
-                .get('/' + nonExistenId)
-                .set('Authorization', 'Bearer ' + me.jwtToken)
-                .expect(404)
-        })
-
-        it('/:id (GET) invalide user id', async () => {
-            const id = '1'
-            await request(app.getHttpServer())
-                .get('/' + id)
-                .set('Authorization', 'Bearer ' + me.jwtToken)
-                .expect(400)
-        })
-
-        it('/:id (PUT) edit profile', async (done) => {
-            const res = await getProfile(me.id, me.jwtToken)
-
-            const email = 'fake@mail'
-            const userDto: UserDto = { ...res.body }
-            userDto.email = email
-            const oldUserDto: UserDto = res.body
-
-            await editProfile(userDto, me.id, me.jwtToken).then(response => {
-                if (response.body.email !== email) {
-                    done.fail(`Unexpected (${response.body.email}) email.`);
-                }
-            })
-            await editProfile(oldUserDto, me.id, me.jwtToken);
-            done();
-        })
-
-        it('/:id (PUT) edit someone else\'s profile', async () => {
-            const res = await getProfile(otherUser.id, otherUser.jwtToken)
-
-            const email = 'email@ail.ail'
-            const userDto: UserDto = { ...res.body }
-            userDto.email = email
-
-            return await request(app.getHttpServer())
-                .put('/' + otherUser.id)
-                .set('Authorization', 'Bearer ' + me.jwtToken)
-                .send(userDto)
-                .set('Accept', 'application/json')
-                .expect(400)
-        })
-
-        it('/:id (GET) closed user\'s profile', async (done) => {
-
-            // отредактировать профиль другого пользователя так, чтобы он был закрытым
-            const res = await getProfile(otherUser.id, otherUser.jwtToken)
-
-            const userDto: UserDto = {...res.body}
-            userDto.profilePrivatType = profilePrivatType.closed
-            const oldUserDto: UserDto = res.body
-
-            await editProfile(userDto, otherUser.id, otherUser.jwtToken).then(response => {
-                if (response.body.profilePrivatType !== profilePrivatType.closed) 
-                    done.fail('Profile must be closed for test.');
-            })
-
-            //запрос от "меня" на закрытый профиль пользователя 
-            await request(app.getHttpServer())
-                .get('/' + otherUser.id)
-                .set('Authorization', 'Bearer ' + me.jwtToken)
-                .expect(403)
-
-            await editProfile(oldUserDto, otherUser.id, otherUser.jwtToken).then(response => {
-                if (response.body.profilePrivatType !== profilePrivatType.open) 
-                    done.fail('Profile must be open for test.');
-            })
-            done();
         })
     });
 
@@ -290,14 +146,14 @@ describe('AppController (e2e)', () => {
             })
 
             await subscribe(otherUser.id, me.jwtToken).then(async response => {
-                // todo
+                
                 const userMe3: IUser = response.body;
-                // if (userMe3.subscriptions !== userMe2.subscriptions) 
-                //     done.fail();
+                if (userMe3.subscriptions.length !== userMe2.subscriptions.length) 
+                    done.fail();
 
                 const userOther3: IUser = (await getProfile(otherUser.id, otherUser.jwtToken)).body
-                // if (userOther3.subscribers != userOther2.subscribers) 
-                //     done.fail();
+                if (userOther3.subscribers.length != userOther2.subscribers.length) 
+                    done.fail();
             })
 
             //возврат профилей в прежнее состояние
@@ -323,18 +179,18 @@ describe('AppController (e2e)', () => {
             if (userOther.profilePrivatType !== profilePrivatType.closed) done.fail('Profile must be closed');
 
             await subscribe(otherUser.id, me.jwtToken).then(async response => {
-                // todo
+
                 const userMe2: IUser = response.body;
-                // if (userMe2.subscriptions !== userMe.subscriptions) 
-                //     done.fail();
-                // if (userMe2.subscrReqsFromMe !== userMe.subscrReqsFromMe) 
-                //     done.fail();
+                if (userMe2.subscriptions.length !== userMe.subscriptions.length) 
+                    done.fail();
+                if (userMe2.subscrReqsFromMe.length !== userMe.subscrReqsFromMe.length) 
+                    done.fail();
 
                 const userOther2: IUser = (await getProfile(otherUser.id, otherUser.jwtToken)).body
-                // if (userOther2.subscribers != userOther.subscribers) 
-                //     done.fail();
-                // if (userOther2.subscribers != userOther.subscribers) 
-                //     done.fail();
+                if (userOther2.subscribers.length != userOther.subscribers.length) 
+                    done.fail();
+                if (userOther2.subscribers.length != userOther.subscribers.length) 
+                    done.fail();
             })
 
             //возврат профилей в начальное состояние
@@ -409,8 +265,8 @@ describe('AppController (e2e)', () => {
             const userMe2 = (await getProfile(me.id, me.jwtToken)).body
             const userOther2 = (await getProfile(otherUser.id, otherUser.jwtToken)).body
 
-            // if (userMe.subscrReqsFromMe !== userMe2.subscrReqsFromMe) done.fail()
-            // if (userOther.subscrReqsToMe !== userOther2.subscrReqsToMe) done.fail()
+            if (userMe.subscrReqsFromMe.length !== userMe2.subscrReqsFromMe.length) done.fail()
+            if (userOther.subscrReqsToMe.length !== userOther2.subscrReqsToMe.length) done.fail()
 
             //возврат профилей в прежнее состояние
             await editProfile(userMeOld, me.id, me.jwtToken)

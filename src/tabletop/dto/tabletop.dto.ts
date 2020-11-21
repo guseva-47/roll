@@ -3,10 +3,9 @@ import { IsNotEmpty } from "class-validator";
 import { IPlayer } from "../interface/player.interfase";
 
 export class TabletopDto {
-    
     @IsNotEmpty()
     _id: string;
-
+    
     @IsNotEmpty()
     name: string;
     

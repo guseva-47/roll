@@ -1,5 +1,4 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
-import { identity } from 'rxjs';
 import { TabletopDto } from 'src/tabletop/dto/tabletop.dto';
 import { ITabletop } from 'src/tabletop/interface/tabletop.interface';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
@@ -57,8 +56,8 @@ export class UserTabletopsController {
         return await this.userTabletopsService.removeTabletop(idMe, idTable);        
     }
 
-    @Post('tabletops/:idTable')
-    async postTabletop(@Param('idTable') tabletopDto: TabletopDto, @Request() req): Promise<ITabletop> 
+    @Post('tabletops')
+    async createTabletop(@Body() tabletopDto: TabletopDto, @Request() req): Promise<ITabletop> 
     {
         const idMe = req.user.id
         return await this.userTabletopsService.createTabletop(idMe, tabletopDto);        

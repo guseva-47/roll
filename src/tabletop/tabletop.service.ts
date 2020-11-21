@@ -2,16 +2,17 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { UserDto } from 'src/user/dto/user.dto';
-import { roleEnum } from 'src/user/enum/role.enum';
+import { UserService } from 'src/user/user.service';
 import { TabletopDto } from './dto/tabletop.dto';
-import { gameRole } from './enum/game-role.enum';
 import { TabletopNotFound } from './exseption/tabletop-undefind.exception';
 import { ITabletop } from './interface/tabletop.interface';
 
 @Injectable()
 export class TabletopService {
-    constructor(@InjectModel('Tabletop') private readonly tabletopModel: Model<ITabletop>){}
+    constructor(
+        @InjectModel('Tabletop') private readonly tabletopModel: Model<ITabletop>,
+        private userService: UserService,
+        ){}
 
     // создание новой игры, редактирование параметров существующей игры, передача прав на игру другому пользователю, удаление игры.
 
@@ -31,7 +32,7 @@ export class TabletopService {
 
         throw new ForbiddenException();
     }
-
+    // todo нужен ли orFail() ??????
     async getCreatedTabletops(idUser: string): Promise<Array<ITabletop>> {
 
         return await this.tabletopModel.find({owner: idUser});
@@ -51,12 +52,15 @@ export class TabletopService {
 
     async updateTabletop(tabletop: TabletopDto): Promise<ITabletop> {
 
-        return await (await this.tabletopModel.findByIdAndUpdate(tabletop._id, tabletop)).execPopulate();
+        return await (await this.tabletopModel
+            .findByIdAndUpdate(tabletop._id, tabletop)
+            .orFail(new TabletopNotFound))
+            .execPopulate();
     }
 
     async removeTableTop(idUser: string, idTabletop: string): Promise<ITabletop> {
         
-        const tabletop = await (await this.tabletopModel.findById(idTabletop)).execPopulate();
+        const tabletop = await this._checkTable(idTabletop)
         if (tabletop.owner !== idUser) throw new ForbiddenException();
         
         return await (await this.tabletopModel.findByIdAndRemove(idTabletop)).execPopulate();
@@ -67,4 +71,9 @@ export class TabletopService {
         tabletop.owner = idUserTo;
         return this.updateTabletop(tabletop);
     }
+
+    async _checkTable(idTabletop: string) {
+        const tabletop = await this.tabletopModel.findById(idTabletop).orFail(new TabletopNotFound)
+        return await tabletop.execPopulate();
+    } 
 }
