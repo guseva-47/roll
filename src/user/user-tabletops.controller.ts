@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
+
 import { TabletopDto } from 'src/tabletop/dto/tabletop.dto';
 import { ITabletop } from 'src/tabletop/interface/tabletop.interface';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
-import { UserFriendsService } from './user-friends.service';
 import { UsersTabletopsService } from './user-tabletops.service';
 
 @Controller()
@@ -10,7 +10,6 @@ import { UsersTabletopsService } from './user-tabletops.service';
 export class UserTabletopsController {
     constructor(
         private userTabletopsService: UsersTabletopsService,
-        private userFriendsService: UserFriendsService,
         ) {}
 
     @Get(':id/tabletops')
@@ -24,9 +23,7 @@ export class UserTabletopsController {
     }
 
     @Get('tabletops/:idTable')
-    async getTabletop(
-        @Param('idTable') idTable: string, 
-        @Request() req): Promise<ITabletop> 
+    async getTabletop(@Param('idTable') idTable: string, @Request() req): Promise<ITabletop> 
     {
         const idMe = req.user.id
         return await this.userTabletopsService.getTabletop(idMe, idTable);        
@@ -63,6 +60,10 @@ export class UserTabletopsController {
         return await this.userTabletopsService.createTabletop(idMe, tabletopDto);        
     }
 
-
-
+    @Delete('delete_all_tables')
+    async deleteAllTabletop(): Promise<void> 
+    {
+        return await this.userTabletopsService.removeAllTables();        
+    }
+    
 }

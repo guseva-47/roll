@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TabletopModule } from 'src/tabletop/tabletop.module';
-import { TabletopService } from 'src/tabletop/tabletop.service';
 
 import { UserSchema } from './schema/user.schema';
 import { UserFriendsService } from './user-friends.service';

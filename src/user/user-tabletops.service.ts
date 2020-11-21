@@ -28,7 +28,7 @@ export class UsersTabletopsService {
 		return this.tabletopService.getAllTabletops(userOther._id);
 	}
 
-	async getTabletop(idTabletop: string, idMe: string): Promise<ITabletop> {
+	async getTabletop(idMe: string, idTabletop: string): Promise<ITabletop> {
 
 		return this.tabletopService.getTabletop(idMe, idTabletop);
 	}
@@ -49,11 +49,14 @@ export class UsersTabletopsService {
 		return await this.tabletopService.updateTabletop(tabletop);
 	}
 
-	async removeTabletop(idMe: string, idTabletop: string): Promise<ITabletop> {
-
+	async removeTabletop(idMe: string, idTabletop: string): Promise<any> {
+        
 		return await this.tabletopService.removeTableTop(idMe, idTabletop);
 	}
 
+    async removeAllTables() {
+        return await this.tabletopService.removeAllTables();
+    }
 	async createTabletop(idMe: string, tabletop: TabletopDto): Promise<ITabletop> {
         if (tabletop.name == '') throw new BadRequestException;
 		return await this.tabletopService.createTabletop(idMe, tabletop);
