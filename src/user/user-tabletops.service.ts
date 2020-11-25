@@ -33,15 +33,6 @@ export class UsersTabletopsService {
 		return this.tabletopService.getTabletop(idMe, idTabletop);
 	}
 
-	// async rightTransfer(idMe: string, idSomeUser: string, tabletop: TabletopDto): Promise<ITabletop> {
-
-	//    if (idMe === idSomeUser) return this.getTabletop(tabletop._id, idMe);
-
-	//    if (tabletop.owner !== idMe) throw new BadRequestException();
-
-	//    return await this.tabletopService.rightTransfer(tabletop, idSomeUser);
-	// }
-
 	async editTabletop(idMe: string, tabletop: TabletopDto): Promise<ITabletop> {
 
         if (tabletop.owner !== idMe) throw new ForbiddenException();

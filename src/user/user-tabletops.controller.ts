@@ -29,16 +29,6 @@ export class UserTabletopsController {
         return await this.userTabletopsService.getTabletop(idMe, idTable);        
     }
 
-    // @Put('tabletops/edit/owner')
-    // async rightTransfer(
-    //     @Body() idSomeUser: string,
-    //     @Body() tabletopDto: TabletopDto, 
-    //     @Request() req): Promise<ITabletop> 
-    // {
-    //     const idMe = req.user.id
-    //     return this.userTabletopsService.rightTransfer(idMe, idSomeUser, tabletopDto);
-    // }
-
     @Put('tabletops/edit')
     async editTabletop(@Body() tabletopDto: TabletopDto, @Request() req): Promise<ITabletop> 
     {

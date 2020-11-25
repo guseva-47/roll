@@ -17,15 +17,14 @@ describe('AppController (e2e)', () => {
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [configModule, AppModule],
+            imports: [configModule, AppModule, ],
         }).compile();
 
         app = moduleFixture.createNestApplication();
         await app.init();
     });
 
-    // todo
-    describe('', () => {
+    describe('Important user-tabletop-controller functionality', () => {
         let createdTableId: string;
         const tableName = 'testing game'
         
@@ -99,31 +98,53 @@ describe('AppController (e2e)', () => {
 
         it('/tabletops/edit (PUT) edit tabletop', async (done) => {
 
-            // const tabletop = new TabletopDto()
-            // tableName = 'new name'
-            // tabletop.name = ''
+            const tabletop = await request(app.getHttpServer())
+                                    .get('/tabletops/' + createdTableId)
+                                    .set('Authorization', 'Bearer ' + me.jwtToken)
+                                    .expect(200)
+                                    .then(response => {
+                                        return response.body
+                                    })
 
-            // await request(app.getHttpServer())
-            //     .put('/tabletops/edit')
-            //     .set('Authorization', 'Bearer ' + me.jwtToken)
-            //     .send(tabletop)
-            //     .set('Accept', 'application/json')
-            //     .expect(400)
+            const newName = 'lala name'
+            tabletop.name = newName
+
+            await request(app.getHttpServer())
+                .put('/tabletops/edit')
+                .set('Authorization', 'Bearer ' + me.jwtToken)
+                .send(tabletop)
+                .set('Accept', 'application/json')
+                .expect(200)
+            
+            await request(app.getHttpServer())
+                .get('/tabletops/' + createdTableId)
+                .set('Authorization', 'Bearer ' + me.jwtToken)
+                .expect(200)
+                .then(response => {
+                    const table: ITabletop = response.body
+                    if (table.name !== newName) done.fail();
+                })
 
             done();
         })
         
         it('/tabletops/edit (PUT) edit tabletop with wrong data', async (done) => {
 
-            // const tabletop = new TabletopDto()
-            // tabletop.name = ''
+            const tabletop = await request(app.getHttpServer())
+                                    .get('/tabletops/' + createdTableId)
+                                    .set('Authorization', 'Bearer ' + me.jwtToken)
+                                    .expect(200)
+                                    .then(response => {
+                                        return response.body
+                                    })
+            tabletop.name = ''
 
-            // await request(app.getHttpServer())
-            //     .put('/tabletops/edit')
-            //     .set('Authorization', 'Bearer ' + me.jwtToken)
-            //     .send(tabletop)
-            //     .set('Accept', 'application/json')
-            //     .expect(400)
+            await request(app.getHttpServer())
+                .put('/tabletops/edit')
+                .set('Authorization', 'Bearer ' + me.jwtToken)
+                .send(tabletop)
+                .set('Accept', 'application/json')
+                .expect(400)
 
             done();
         })
