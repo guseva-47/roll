@@ -1,16 +1,28 @@
 import { BadRequestException, Controller, Get, Param, Put, Request, Body, Response, UseGuards, LoggerService, Logger,} from '@nestjs/common';
+
 import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
 import { UserService } from './user/user.service';
 import { UserDto } from './user/dto/user.dto';
+import { TrueRandomeService } from './true-randome/true-randome.service';
+
+// todo поставиьт точки с запятыми
 
 @Controller()
 export class AppController {
     private readonly logger: LoggerService = new Logger(AppController.name)
 
     constructor(
-        private userService: UserService
-    ) {
-        this.logger.log('>>>> qqqqqqqqqq <<<<')
+        private userService: UserService,
+        private trueRandomeService: TrueRandomeService
+    ) {}
+    
+    @Get('rand')
+    async getRandom(@Body() params: {count: string, min: string, max: string}) {
+        this.logger.log('getRandom() get запрос на случайные числа.')
+
+        const result = this.trueRandomeService.getNum(Number(params.count), Number(params.min), Number(params.max));
+        this.logger.log('getRandom() возвращение результата ${result.toString()}.')
+        return result;
     }
 
     @Get()

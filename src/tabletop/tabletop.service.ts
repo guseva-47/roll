@@ -1,8 +1,9 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { TabletopDto } from './dto/tabletop.dto';
+import { BadId } from './exseption/bad-id.exception';
 import { TabletopNotFound } from './exseption/tabletop-undefind.exception';
 import { ITabletop } from './interface/tabletop.interface';
 
@@ -23,7 +24,6 @@ export class TabletopService {
     }
 
     async getTabletop(idUser: string, idTabletop: string): Promise<ITabletop> {
-        
         
         const tabletop = await this._checkTable(idTabletop)
 
@@ -54,6 +54,8 @@ export class TabletopService {
     }
 
     async updateTabletop(tabletop: TabletopDto): Promise<ITabletop> {
+        
+        this._checkTable(tabletop._id);
 
         return await (await this.tabletopModel
             .findByIdAndUpdate(tabletop._id, tabletop)
@@ -72,13 +74,16 @@ export class TabletopService {
     }
 
     async rightTransfer(tabletop: TabletopDto, idUserTo: string): Promise<ITabletop> {
+        this._checkTable(tabletop._id)
         
         tabletop.owner = idUserTo;
         return this.updateTabletop(tabletop);
     }
 
     async _checkTable(idTabletop: string) {
-        const tabletop = await this.tabletopModel.findById(idTabletop).orFail(new TabletopNotFound)
+        if (!Types.ObjectId.isValid(idTabletop)) throw new BadId;
+
+        const tabletop = await this.tabletopModel.findById(idTabletop).orFail(new TabletopNotFound);
         return await tabletop.execPopulate();
     } 
 

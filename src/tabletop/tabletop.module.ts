@@ -6,7 +6,8 @@ import { TabletopService } from './tabletop.service';
 
 @Module({
     imports: [
-        MongooseModule.forFeature([{ name: 'Tabletop', schema: TabletopSchema }]),
+        MongooseModule.forFeature([{ name: 'Tabletop', schema: TabletopSchema }],
+        ),
     ],
     providers: [TabletopService],
     exports: [TabletopService],
