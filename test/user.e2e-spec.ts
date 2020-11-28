@@ -9,7 +9,7 @@ import { meUserTestData, otherUserTestData } from './data';
 
 process.setMaxListeners(100);
 
-describe('AppController (e2e)', () => {
+describe('UserController (e2e)', () => {
     let app: INestApplication;
     const me = meUserTestData;
     const otherUser = otherUserTestData;
@@ -39,40 +39,6 @@ describe('AppController (e2e)', () => {
 
         app = moduleFixture.createNestApplication();
         await app.init();
-    });
-
-    describe('simplest test for test', () => {
-        it('/ (GET)', async () => {
-            await request(app.getHttpServer())
-                .get('/')
-                .expect(200)
-                .expect('hello');
-        });
-    });
-
-    describe('redirecting to google for login', () => {
-
-        it('/login (GET)', async () => {
-            await request(app.getHttpServer())
-                .get('/login')
-                .expect(302)
-                .expect('location', '/auth/google')
-        });
-
-        it('/auth/google (GET)', async () => {
-            await request(app.getHttpServer())
-                .get('/auth/google')
-                .expect(302)
-                .expect('location', /https:\/\/accounts\.google\.com\/o\/oauth2\/v2\/auth*/)
-        });
-
-        it('/login (GET) with redirect', async () => {
-            await request(app.getHttpServer())
-                .get('/login')
-                .expect(302)
-                .redirects(1)
-                .expect(302)
-        });
     });
 
     describe('get profile', () => {

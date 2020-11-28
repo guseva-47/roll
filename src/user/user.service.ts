@@ -40,7 +40,7 @@ export class UserService {
         );
     }
 
-    async _updateProfile(userDto: UserDto): Promise<IUser> {
+    async editProfile(userDto: UserDto): Promise<IUser> {
 
         userDto.lastActiveAt = new Date();
         const user = await this.userModel.findByIdAndUpdate(userDto._id, userDto, { new: true }).orFail(new UserNotFound);

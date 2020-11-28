@@ -7,11 +7,10 @@ import { configModule } from 'src/configure.root';
 import { meUserTestData, otherUserTestData } from './data';
 import { TabletopDto } from 'src/tabletop/dto/tabletop.dto';
 import {ITabletop} from 'src/tabletop/interface/tabletop.interface';
-import { response } from 'express';
 
 process.setMaxListeners(100);
 
-describe('AppController (e2e)', () => {
+describe('User tabletop controller (e2e)', () => {
     let app: INestApplication;
     const me = meUserTestData;
     const otherUser = otherUserTestData;
@@ -185,21 +184,6 @@ describe('AppController (e2e)', () => {
         // })
     });
 
-    describe('random', () => {
-        it('', async () => {
-            const params = {
-                count: '6', 
-                min: '1', 
-                max: '20',
-            }
-
-            await request(app.getHttpServer())
-                .get('/rand')
-                .send({count: params.count, min: params.min, max: params.max})
-                .set('Accept', 'application/json')
-                .expect(200)
-        })
-    })
     afterAll(async () => {
         await app.close();
     });

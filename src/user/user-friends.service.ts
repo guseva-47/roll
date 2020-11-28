@@ -68,7 +68,7 @@ export class UserFriendsService {
         return await userMe.save();
     }
   
-    //todo названия userFrom, userTo отстой
+
     // одобрить заявку на подписку (если у вас закрытый профиль)
     async approveSubscriber(idMe: string, idSomeUser: string): Promise<IUser> {
   
@@ -119,7 +119,6 @@ export class UserFriendsService {
         return user.subscribers.includes(idSubscriber);
     }
 
-    // todo названия
     private _sub(userFrom: IUser, userTo: IUser): [IUser, IUser] {
 
         if (userFrom.id === userTo.id) throw new BadRequestException();

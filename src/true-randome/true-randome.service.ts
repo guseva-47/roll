@@ -11,12 +11,12 @@ export class TrueRandomeService {
     private readonly spareSeed = process.env.SEED_FOR_RANDOMIZER;
 
     private countOfUsed = 0; // солько раз использовали генератор с момента последнего засева
-    private readonly maxCountOfUsed = 10; // максимальное количсетво раз, сколько можно использовать генератор с момента последнего засева
+    private readonly maxCountOfUsed = 100; // максимальное количсетво раз, сколько можно использовать генератор с момента последнего засева
 
-    private readonly isActive = false;
+    private readonly isActive = true;
     private readonly queryConsts = {
         num: 3, // количество строк, запрашиваемое у сервиса randoom.org
-        len: 2,
+        len: 3,
         digits: 'on',
         upperalpha: 'on',
         loweralpha: 'on',
@@ -34,7 +34,7 @@ export class TrueRandomeService {
         // todo
         this.logger.log('Конструктор. Инициализация генератора стандартным зерном.')
         // засеять генератор чем-то посредственным
-        this.rand = random.clone(this.spareSeed)
+        this.rand = random.clone(Date.now().toString())
         // асинхронное засеивание генератора
         this._sowing()
     }
@@ -42,7 +42,10 @@ export class TrueRandomeService {
     private async _addTrueRandomeNums(): Promise<any> {
         
         this.logger.log('_addTrueRandomeNums(). Запрос к сервису random.org для получения истинно случайных строк .')
-        if (!this.isActive) this.seedsStorage.push(this.spareSeed);
+        if (!this.isActive){
+            this.logger.log('Обращение к сервису randome.org остановленно разработчиком, возможно, в целях тестирования. Генератор будет засеян стандартным зерном.')
+            this.seedsStorage.push(Date.now().toString());
+        }
         
         // https://www.random.org/strings/?num=10&len=8&digits=on&upperalpha=on&loweralpha=on&unique=on&format=html&rnd=new
         return await this.httpService.get('https://www.random.org/strings/', {
@@ -84,7 +87,7 @@ export class TrueRandomeService {
 
                     throw err;
                 }
-                this.seedsStorage.push(this.spareSeed);
+                this.seedsStorage.push(Date.now().toString());
 
                 this.logger.log('_addTrueRandomeNums(). Сервис недоступен. Будет использовано запасное зерно.');
             });
@@ -92,6 +95,7 @@ export class TrueRandomeService {
 
     private async _sowing(): Promise<any> {
         this.logger.log('_sowing(). Метод засеивания генератора случайных чисел.')
+        this.logger.log(`_sowing(). Состояние хранилища зёрен = [${this.seedsStorage}]`);
 
         if (this.seedsStorage.length <= 0) {
             this.logger.log('_sowing(). Хранилище истинно случайных строк пусто.')
@@ -103,6 +107,7 @@ export class TrueRandomeService {
         
         // засеивание генератора
         this.rand = random.clone(newSeed)
+        this.logger.log(`_sowing(). Состояние хранилища зёрен = [${this.seedsStorage}]`);
         this.logger.log('_sowing(). Генератор успешно проинициализирован.')
 
         this.countOfUsed = 0;
@@ -112,6 +117,7 @@ export class TrueRandomeService {
 
         this.logger.log(`getNum(). Получение случайных чисел в количестве ${count}, из диапазона [${min} ; ${max}].`);
 
+        count = Math.round(count)
         if (count <= 0 || min >= max) {
             this.logger.error(`getNum(). ${count} <= 0 || ${min} >= ${max}`)
             

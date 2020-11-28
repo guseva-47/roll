@@ -35,7 +35,7 @@ export class TabletopService {
 
         throw new ForbiddenException();
     }
-    // todo нужен ли orFail() ??????
+
     async getCreatedTabletops(idUser: string): Promise<Array<ITabletop>> {
 
         return await this.tabletopModel.find({owner: idUser});
@@ -80,7 +80,7 @@ export class TabletopService {
         return this.updateTabletop(tabletop);
     }
 
-    async _checkTable(idTabletop: string) {
+    private async _checkTable(idTabletop: string): Promise<ITabletop> {
         if (!Types.ObjectId.isValid(idTabletop)) throw new BadId;
 
         const tabletop = await this.tabletopModel.findById(idTabletop).orFail(new TabletopNotFound);

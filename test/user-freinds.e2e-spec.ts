@@ -9,13 +9,13 @@ import { profilePrivatType } from 'src/user/enum/profile-privet-type.enum';
 import { IUser } from 'src/user/interface/user.interface';
 import { meUserTestData, otherUserTestData } from './data';
 
-describe('AppController (e2e)', () => {
+describe('User freinds controller (e2e)', () => {
     let app: INestApplication;
     const me = meUserTestData;
     const otherUser = otherUserTestData;
 
     const nonExistenId = '5fae59d7c4a4f05a98e23377'
-    async function editProfile(userDto: UserDto, userId: string, jwtToken: string): Promise<request.Response> {
+    async function _editProfile(userDto: UserDto, userId: string, jwtToken: string): Promise<request.Response> {
         return await request(app.getHttpServer())
             .put('/' + userId)
             .set('Authorization', 'Bearer ' + jwtToken)
@@ -24,14 +24,14 @@ describe('AppController (e2e)', () => {
             .expect(200)
     }
 
-    async function getProfile(userId: string, jwtToken: string): Promise<request.Response> {
+    async function _getProfile(userId: string, jwtToken: string): Promise<request.Response> {
         return await request(app.getHttpServer())
             .get('/' + userId)
             .set('Authorization', 'Bearer ' + jwtToken)
             .expect(200)
     }
 
-    function deepCopyUser(user) {
+    function _deepCopyUser(user) {
         const newUser = {...user}
         newUser.roles = user.roles.slice()
         newUser.subscribers = user.subscribers.slice()
@@ -41,6 +41,15 @@ describe('AppController (e2e)', () => {
         newUser.ignoreUsers = user.ignoreUsers.slice()
         
         return newUser
+    }
+
+    async function _subscribe(otherUserId: string, jwtToken: string) {
+        return await request(app.getHttpServer())
+            .post('/sub')
+            .set('Authorization', 'Bearer ' + jwtToken)
+            .send({id: otherUserId})
+            .set('Accept', 'application/json')
+            .expect(201)
     }
 
     beforeEach(async () => {
@@ -56,7 +65,7 @@ describe('AppController (e2e)', () => {
         it('___edit profile', async () => {
             const flag = true
             if (flag) {
-                const res = await getProfile(otherUser.id, otherUser.jwtToken)
+                const res = await _getProfile(otherUser.id, otherUser.jwtToken)
 
                 const userDtoOther: UserDto = { ...res.body }
                 userDtoOther.subscrReqsToMe = []
@@ -64,9 +73,9 @@ describe('AppController (e2e)', () => {
                 userDtoOther.subscriptions = []
                 userDtoOther.subscrReqsFromMe = []
                 userDtoOther.profilePrivatType = profilePrivatType.open
-                await editProfile(userDtoOther, otherUser.id, otherUser.jwtToken)
+                await _editProfile(userDtoOther, otherUser.id, otherUser.jwtToken)
 
-                const res2 = await getProfile(me.id, me.jwtToken)
+                const res2 = await _getProfile(me.id, me.jwtToken)
 
                 const userDtoMe: UserDto = { ...res2.body }
                 userDtoMe.subscrReqsFromMe = []
@@ -74,39 +83,30 @@ describe('AppController (e2e)', () => {
                 userDtoMe.subscribers = []
                 userDtoMe.subscrReqsToMe = []
                 userDtoMe.profilePrivatType = profilePrivatType.open
-                await editProfile(userDtoMe, me.id, me.jwtToken)
+                await _editProfile(userDtoMe, me.id, me.jwtToken)
             }
         })
     });
-
-    async function subscribe(otherUserId: string, jwtToken: string) {
-        return await request(app.getHttpServer())
-            .post('/sub')
-            .set('Authorization', 'Bearer ' + jwtToken)
-            .send({id: otherUserId})
-            .set('Accept', 'application/json')
-            .expect(201)
-    }
-
+    
     describe('subscribe user from freinds controller', () => {
 
         it('/sub (POST) subscribe to otherUser (open profile)', async (done) => {
-            const userMe = (await getProfile(me.id, me.jwtToken)).body
+            const userMe = (await _getProfile(me.id, me.jwtToken)).body
 
-            const userOther = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+            const userOther = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
             if (userOther.profilePrivatType !== profilePrivatType.open) done.fail('Profile must be open');
             
-            await subscribe(otherUser.id, me.jwtToken).then(async response => {
+            await _subscribe(otherUser.id, me.jwtToken).then(async response => {
 
                 const newUserMe: IUser = response.body;
                 const isSubscription: boolean = newUserMe.subscriptions.includes(otherUser.id);
 
-                const newUserOther: IUser = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+                const newUserOther: IUser = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
                 const isSubscriber: boolean =  newUserOther.subscribers.includes(me.id)
 
                 //возврат профилей в прежнее состояние
-                await editProfile(userMe, me.id, me.jwtToken)
-                await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+                await _editProfile(userMe, me.id, me.jwtToken)
+                await _editProfile(userOther, otherUser.id, otherUser.jwtToken)
 
                 if (!isSubscription || !isSubscriber) 
                     done.fail(`isSubscription = ${isSubscription} and isSubscriber = ${isSubscriber}`)
@@ -125,19 +125,19 @@ describe('AppController (e2e)', () => {
         });
 
         it('/sub (POST) subscribe twice to open profile', async (done) => {
-            const userMeOld = (await getProfile(me.id, me.jwtToken)).body
+            const userMeOld = (await _getProfile(me.id, me.jwtToken)).body
 
-            const userOtherOld = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+            const userOtherOld = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
             if (userOtherOld.profilePrivatType !== profilePrivatType.open) done.fail('Profile must be open');
             
             let userMe2: IUser
             let userOther2: IUser
-            await subscribe(otherUser.id, me.jwtToken).then(async response => {
+            await _subscribe(otherUser.id, me.jwtToken).then(async response => {
 
                 userMe2 = response.body;
                 const isSubscription: boolean = userMe2.subscriptions.includes(otherUser.id);
 
-                userOther2 = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+                userOther2 = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
                 const isSubscriber: boolean =  userOther2.subscribers.includes(me.id)
 
 
@@ -145,40 +145,40 @@ describe('AppController (e2e)', () => {
                     done.fail(`isSubscription = ${isSubscription} and isSubscriber = ${isSubscriber}`)
             })
 
-            await subscribe(otherUser.id, me.jwtToken).then(async response => {
+            await _subscribe(otherUser.id, me.jwtToken).then(async response => {
                 
                 const userMe3: IUser = response.body;
                 if (userMe3.subscriptions.length !== userMe2.subscriptions.length) 
                     done.fail();
 
-                const userOther3: IUser = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+                const userOther3: IUser = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
                 if (userOther3.subscribers.length != userOther2.subscribers.length) 
                     done.fail();
             })
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMeOld, me.id, me.jwtToken)
-            await editProfile(userOtherOld, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userMeOld, me.id, me.jwtToken)
+            await _editProfile(userOtherOld, otherUser.id, otherUser.jwtToken)
 
             done();
 
         });
 
         it('/sub (POST) subscribe twice to closed profile', async (done) => {
-            const userMeOld = (await getProfile(me.id, me.jwtToken)).body
-            const userMe = deepCopyUser(userMeOld)
+            const userMeOld = (await _getProfile(me.id, me.jwtToken)).body
+            const userMe = _deepCopyUser(userMeOld)
             userMe.subscriptions.push(otherUser.id)
-            editProfile(userMe, me.id, me.jwtToken)
+            _editProfile(userMe, me.id, me.jwtToken)
 
-            const userOtherOld = (await getProfile(otherUser.id, otherUser.jwtToken)).body
-            const userOther = deepCopyUser(userOtherOld)
+            const userOtherOld = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
+            const userOther = _deepCopyUser(userOtherOld)
             userOther.profilePrivatType = profilePrivatType.closed
             userOther.subscribers.push(me.id)
-            editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            _editProfile(userOther, otherUser.id, otherUser.jwtToken)
 
             if (userOther.profilePrivatType !== profilePrivatType.closed) done.fail('Profile must be closed');
 
-            await subscribe(otherUser.id, me.jwtToken).then(async response => {
+            await _subscribe(otherUser.id, me.jwtToken).then(async response => {
 
                 const userMe2: IUser = response.body;
                 if (userMe2.subscriptions.length !== userMe.subscriptions.length) 
@@ -186,7 +186,7 @@ describe('AppController (e2e)', () => {
                 if (userMe2.subscrReqsFromMe.length !== userMe.subscrReqsFromMe.length) 
                     done.fail();
 
-                const userOther2: IUser = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+                const userOther2: IUser = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
                 if (userOther2.subscribers.length != userOther.subscribers.length) 
                     done.fail();
                 if (userOther2.subscribers.length != userOther.subscribers.length) 
@@ -194,33 +194,33 @@ describe('AppController (e2e)', () => {
             })
 
             //возврат профилей в начальное состояние
-            await editProfile(userMeOld, me.id, me.jwtToken)
-            await editProfile(userOtherOld, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userMeOld, me.id, me.jwtToken)
+            await _editProfile(userOtherOld, otherUser.id, otherUser.jwtToken)
 
             done();
 
         });
 
         it('/sub (POST) subscribe to otherUser (closed profile)', async (done) => {
-            const userMeOld = deepCopyUser((await getProfile(me.id, me.jwtToken)).body)
+            const userMeOld = _deepCopyUser((await _getProfile(me.id, me.jwtToken)).body)
 
-            const userOther = (await getProfile(otherUser.id, otherUser.jwtToken)).body
-            const newUserOther = deepCopyUser(userOther)
+            const userOther = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
+            const newUserOther = _deepCopyUser(userOther)
             newUserOther.profilePrivatType = profilePrivatType.closed
-            editProfile(newUserOther, otherUser.id, otherUser.jwtToken)
+            _editProfile(newUserOther, otherUser.id, otherUser.jwtToken)
             
-            await subscribe(otherUser.id, me.jwtToken).then(async response => {
+            await _subscribe(otherUser.id, me.jwtToken).then(async response => {
                 const newUserMe: IUser = response.body;
                 const isSubscription: boolean = newUserMe.subscriptions.includes(otherUser.id)
                 const isSendedRequest: boolean = newUserMe.subscrReqsFromMe.includes(otherUser.id)
 
-                const newUserOther: IUser = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+                const newUserOther: IUser = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
                 const isSubscriber: boolean =  newUserOther.subscribers.includes(me.id)
                 const isResivedRequest: boolean = newUserOther.subscrReqsToMe.includes(me.id)
 
                 //возврат профилей в прежнее состояние
-                await editProfile(userMeOld, me.id, me.jwtToken)
-                await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+                await _editProfile(userMeOld, me.id, me.jwtToken)
+                await _editProfile(userOther, otherUser.id, otherUser.jwtToken)
 
                 if (isSubscription || isSubscriber) done.fail(`isSubscription = ${isSubscription} and isSubscriber = ${isSubscriber}`)
                 if (!isSendedRequest || !isResivedRequest) done.fail(`isSendedRequest = ${isSendedRequest} and isResivedRequest = ${isResivedRequest}`)
@@ -250,27 +250,27 @@ describe('AppController (e2e)', () => {
 
         //подписать на закрытый профиль, если ты уже отправил ему запрос
         it('/sub (POST) try send request to subsribe twice (to closed profile)', async (done) => {
-            const userMeOld = deepCopyUser((await getProfile(me.id, me.jwtToken)).body)
+            const userMeOld = _deepCopyUser((await _getProfile(me.id, me.jwtToken)).body)
 
-            const userOtherOld = (await getProfile(otherUser.id, otherUser.jwtToken)).body
-            let userOther = deepCopyUser(userOtherOld)
+            const userOtherOld = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
+            let userOther = _deepCopyUser(userOtherOld)
             userOther.profilePrivatType = profilePrivatType.closed
-            editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            _editProfile(userOther, otherUser.id, otherUser.jwtToken)
             
-            await subscribe(otherUser.id, me.jwtToken)
-            const userMe = (await getProfile(me.id, me.jwtToken)).body
-            userOther = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+            await _subscribe(otherUser.id, me.jwtToken)
+            const userMe = (await _getProfile(me.id, me.jwtToken)).body
+            userOther = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
 
-            await subscribe(otherUser.id, me.jwtToken)
-            const userMe2 = (await getProfile(me.id, me.jwtToken)).body
-            const userOther2 = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+            await _subscribe(otherUser.id, me.jwtToken)
+            const userMe2 = (await _getProfile(me.id, me.jwtToken)).body
+            const userOther2 = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
 
             if (userMe.subscrReqsFromMe.length !== userMe2.subscrReqsFromMe.length) done.fail()
             if (userOther.subscrReqsToMe.length !== userOther2.subscrReqsToMe.length) done.fail()
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMeOld, me.id, me.jwtToken)
-            await editProfile(userOtherOld, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userMeOld, me.id, me.jwtToken)
+            await _editProfile(userOtherOld, otherUser.id, otherUser.jwtToken)
 
             done();
         });
@@ -279,15 +279,15 @@ describe('AppController (e2e)', () => {
     describe('working with user subscription requests', () => {
         // принять заявку на подписку
         it('/approvesub (POST) approve request to sub', async (done) => {
-            const userMeOld = (await getProfile(me.id, me.jwtToken)).body
-            let userMe = deepCopyUser(userMeOld)
+            const userMeOld = (await _getProfile(me.id, me.jwtToken)).body
+            let userMe = _deepCopyUser(userMeOld)
             userMe.profilePrivatType = profilePrivatType.closed
-            editProfile(userMe, me.id, me.jwtToken)
+            _editProfile(userMe, me.id, me.jwtToken)
 
-            const userOtherOld = (await getProfile(otherUser.id, otherUser.jwtToken)).body
-            let userOther = deepCopyUser(userOtherOld)
+            const userOtherOld = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
+            let userOther = _deepCopyUser(userOtherOld)
             
-            await subscribe(me.id, otherUser.jwtToken)
+            await _subscribe(me.id, otherUser.jwtToken)
 
             await request(app.getHttpServer())
                 .post('/approvesub')
@@ -296,8 +296,8 @@ describe('AppController (e2e)', () => {
                 .set('Accept', 'application/json')
                 .expect(201)
 
-            userMe = (await getProfile(me.id, me.jwtToken)).body
-            userOther = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+            userMe = (await _getProfile(me.id, me.jwtToken)).body
+            userOther = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
 
             if (!userMe.subscribers.includes(otherUser.id)) done.fail()
             if (userMe.subscrReqsToMe.includes(otherUser.id)) done.fail()
@@ -305,18 +305,18 @@ describe('AppController (e2e)', () => {
             if (userOther.subscrReqsFromMe.includes(me.id)) done.fail()
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMeOld, me.id, me.jwtToken)
-            await editProfile(userOtherOld, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userMeOld, me.id, me.jwtToken)
+            await _editProfile(userOtherOld, otherUser.id, otherUser.jwtToken)
 
             done();
         });
 
         // если заявки не существует
         it('/approvesub and /unapproved (POST) approve and unapprove non-existed request', async (done) => {
-            const userMeOld = (await getProfile(me.id, me.jwtToken)).body
-            let userMe = deepCopyUser(userMeOld)
+            const userMeOld = (await _getProfile(me.id, me.jwtToken)).body
+            let userMe = _deepCopyUser(userMeOld)
             userMe.profilePrivatType = profilePrivatType.closed
-            editProfile(userMe, me.id, me.jwtToken)
+            _editProfile(userMe, me.id, me.jwtToken)
 
             await request(app.getHttpServer())
                 .post('/approvesub')
@@ -325,28 +325,28 @@ describe('AppController (e2e)', () => {
                 .set('Accept', 'application/json')
                 .expect(400)
 
-            userMe = (await getProfile(me.id, me.jwtToken)).body
+            userMe = (await _getProfile(me.id, me.jwtToken)).body
             //возврат профилей в прежнее состояние
-            await editProfile(userMeOld, me.id, me.jwtToken)
+            await _editProfile(userMeOld, me.id, me.jwtToken)
 
             done();
         });
 
         // принять и отказать заявку на подписку, от несуществующего пользователя
-        it('/approvesub and /unapproved (POST) approve and unapprove request from non-existen user', async (done) => {
-            const userMeOld = (await getProfile(me.id, me.jwtToken)).body
-            const userMe = deepCopyUser(userMeOld)
+        it('/approvesub and /unapproved (POST) approve and unapprove request from non-existen user from CLOSED profile', async (done) => {
+            const userMeOld = (await _getProfile(me.id, me.jwtToken)).body
+            const userMe = _deepCopyUser(userMeOld)
             userMe.profilePrivatType = profilePrivatType.closed
             // добавление запроса на подписку от некорректного пользователя
             userMe.subscrReqsToMe.push(nonExistenId)
-            editProfile(userMe, me.id, me.jwtToken)
+            _editProfile(userMe, me.id, me.jwtToken)
 
             await request(app.getHttpServer())
                 .post('/approvesub')
                 .set('Authorization', 'Bearer ' + me.jwtToken)
                 .send({id: nonExistenId})
                 .set('Accept', 'application/json')
-                .expect(404)
+                .expect(400) /// here
             
             await request(app.getHttpServer())
                 .post('/unapprovesub')
@@ -356,22 +356,22 @@ describe('AppController (e2e)', () => {
                 .expect(404)
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMeOld, me.id, me.jwtToken)
+            await _editProfile(userMeOld, me.id, me.jwtToken)
 
             done();
         });
 
         // отклонить заявку на подписку
         it('/unapprovesub (POST) unapprove request to sub', async (done) => {
-            const userMeOld = (await getProfile(me.id, me.jwtToken)).body
-            let userMe = deepCopyUser(userMeOld)
+            const userMeOld = (await _getProfile(me.id, me.jwtToken)).body
+            let userMe = _deepCopyUser(userMeOld)
             userMe.profilePrivatType = profilePrivatType.closed
-            editProfile(userMe, me.id, me.jwtToken)
+            _editProfile(userMe, me.id, me.jwtToken)
 
-            const userOtherOld = (await getProfile(otherUser.id, otherUser.jwtToken)).body
-            let userOther = deepCopyUser(userOtherOld)
+            const userOtherOld = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
+            let userOther = _deepCopyUser(userOtherOld)
             
-            await subscribe(me.id, otherUser.jwtToken)
+            await _subscribe(me.id, otherUser.jwtToken)
 
             await request(app.getHttpServer())
                 .post('/unapprovesub')
@@ -380,8 +380,8 @@ describe('AppController (e2e)', () => {
                 .set('Accept', 'application/json')
                 .expect(201)
 
-            userMe = (await getProfile(me.id, me.jwtToken)).body
-            userOther = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+            userMe = (await _getProfile(me.id, me.jwtToken)).body
+            userOther = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
 
             if (userMe.subscribers.includes(otherUser.id)) done.fail()
             if (userMe.subscrReqsToMe.includes(otherUser.id)) done.fail()
@@ -389,21 +389,21 @@ describe('AppController (e2e)', () => {
             if (userOther.subscrReqsFromMe.includes(me.id)) done.fail()
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMeOld, me.id, me.jwtToken)
-            await editProfile(userOtherOld, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userMeOld, me.id, me.jwtToken)
+            await _editProfile(userOtherOld, otherUser.id, otherUser.jwtToken)
 
             done();
         });
 
-        // если ваш профиль не приватный
-        // принять и отказать заявку на подписку, от несуществующего пользователя
-        it('/approvesub and /unapproved (POST) approve and unapprove request from non-existen user', async (done) => {
-            const userMeOld = (await getProfile(me.id, me.jwtToken)).body
-            const userMe = deepCopyUser(userMeOld)
+        // если ваш профиль открытый
+        // принять и отменить заявку на подписку, от несуществующего пользователя
+        it('/approvesub and /unapproved (POST) approve and unapprove request from non-existen user from OPEN profile', async (done) => {
+            const userMeOld = (await _getProfile(me.id, me.jwtToken)).body
+            const userMe = _deepCopyUser(userMeOld)
             userMe.profilePrivatType = profilePrivatType.open
             // добавление запроса на подписку от пользователя
             userMe.subscrReqsToMe.push(otherUser.id)
-            editProfile(userMe, me.id, me.jwtToken)
+            _editProfile(userMe, me.id, me.jwtToken)
 
             await request(app.getHttpServer())
                 .post('/approvesub')
@@ -420,7 +420,7 @@ describe('AppController (e2e)', () => {
                 .expect(400)
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMeOld, me.id, me.jwtToken)
+            await _editProfile(userMeOld, me.id, me.jwtToken)
 
             done();
         });
@@ -428,10 +428,10 @@ describe('AppController (e2e)', () => {
 
     describe('working with user unsubscription requests', () => {
         it('/unsub (POST) unsubscribe from otherUser', async (done) => {
-            const userMe = (await getProfile(me.id, me.jwtToken)).body
-            const userOther = (await getProfile(otherUser.id, otherUser.jwtToken)).body
+            const userMe = (await _getProfile(me.id, me.jwtToken)).body
+            const userOther = (await _getProfile(otherUser.id, otherUser.jwtToken)).body
             
-            await subscribe(otherUser.id, me.jwtToken);
+            await _subscribe(otherUser.id, me.jwtToken);
             await request(app.getHttpServer())
                 .post('/unsub')
                 .set('Authorization', 'Bearer ' + me.jwtToken)
@@ -440,27 +440,27 @@ describe('AppController (e2e)', () => {
                 .expect(201)
                 .then(async response => {
                     const userMe:IUser = response.body;
-                    const userOther:IUser = (await getProfile(otherUser.id, otherUser.jwtToken)).body;
+                    const userOther:IUser = (await _getProfile(otherUser.id, otherUser.jwtToken)).body;
 
                     if (userMe.subscriptions.includes(userOther.id)) done.fail();
                     if (userOther.subscribers.includes(userMe.id)) done.fail();
                 })
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMe, me.id, me.jwtToken)
-            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userMe, me.id, me.jwtToken)
+            await _editProfile(userOther, otherUser.id, otherUser.jwtToken)
             done();
         });
 
         it('/sub (DELETE) delete a subscriber', async (done) => { 
-            const userMe = deepCopyUser((await getProfile(me.id, me.jwtToken)).body)
-            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            const userMe = _deepCopyUser((await _getProfile(me.id, me.jwtToken)).body)
+            const userOther = _deepCopyUser((await _getProfile(otherUser.id, otherUser.jwtToken)).body)
             
-            await subscribe(me.id, otherUser.jwtToken);
+            await _subscribe(me.id, otherUser.jwtToken);
 
-            const newUserMe = (await getProfile(me.id, me.jwtToken)).body
+            const newUserMe = (await _getProfile(me.id, me.jwtToken)).body
             newUserMe.profilePrivatType = profilePrivatType.closed
-            await editProfile(newUserMe, me.id, me.jwtToken)
+            await _editProfile(newUserMe, me.id, me.jwtToken)
 
             await request(app.getHttpServer())
                 .delete('/sub')
@@ -470,15 +470,15 @@ describe('AppController (e2e)', () => {
                 .expect(200)
                 .then(async response => {
                     const userMe:IUser = response.body;
-                    const userOther:IUser = (await getProfile(otherUser.id, otherUser.jwtToken)).body;
+                    const userOther:IUser = (await _getProfile(otherUser.id, otherUser.jwtToken)).body;
 
                     if (userMe.subscribers.includes(userOther.id)) done.fail();
                     if (userOther.subscriptions.includes(userMe.id)) done.fail();
                 })
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMe, me.id, me.jwtToken)
-            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userMe, me.id, me.jwtToken)
+            await _editProfile(userOther, otherUser.id, otherUser.jwtToken)
             done();
         });
     })
@@ -486,10 +486,10 @@ describe('AppController (e2e)', () => {
     describe('get subscribers and subscriptions', () => {
 
         it('/:id/subscribers (GET) subscribers of myself', async (done) => {
-            const userMe = deepCopyUser((await getProfile(me.id, me.jwtToken)).body)
-            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            const userMe = _deepCopyUser((await _getProfile(me.id, me.jwtToken)).body)
+            const userOther = _deepCopyUser((await _getProfile(otherUser.id, otherUser.jwtToken)).body)
             
-            await subscribe(me.id, otherUser.jwtToken);
+            await _subscribe(me.id, otherUser.jwtToken);
             await request(app.getHttpServer())
                 .get('/' + me.id + '/subscribers')
                 .set('Authorization', 'Bearer ' + me.jwtToken)
@@ -501,17 +501,17 @@ describe('AppController (e2e)', () => {
                 })
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMe, me.id, me.jwtToken)
-            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userMe, me.id, me.jwtToken)
+            await _editProfile(userOther, otherUser.id, otherUser.jwtToken)
             
             done();
         });
 
         it('/:id/subscribers (GET) subscribers of otherUser', async (done) => {
-            const userMe = deepCopyUser((await getProfile(me.id, me.jwtToken)).body)
-            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            const userMe = _deepCopyUser((await _getProfile(me.id, me.jwtToken)).body)
+            const userOther = _deepCopyUser((await _getProfile(otherUser.id, otherUser.jwtToken)).body)
             
-            await subscribe(otherUser.id, me.jwtToken);
+            await _subscribe(otherUser.id, me.jwtToken);
             await request(app.getHttpServer())
                 .get('/' + otherUser.id + '/subscribers')
                 .set('Authorization', 'Bearer ' + me.jwtToken)
@@ -523,18 +523,18 @@ describe('AppController (e2e)', () => {
                 })
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMe, me.id, me.jwtToken)
-            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userMe, me.id, me.jwtToken)
+            await _editProfile(userOther, otherUser.id, otherUser.jwtToken)
             
             done();
         });
 
         it('/:id/subscribers (GET) subscribers of otherUser with closed profile', async (done) => {
-            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            const userOther = _deepCopyUser((await _getProfile(otherUser.id, otherUser.jwtToken)).body)
 
-            const newUserOther = deepCopyUser(userOther)
+            const newUserOther = _deepCopyUser(userOther)
             newUserOther.profilePrivatType = profilePrivatType.closed
-            await editProfile(newUserOther, otherUser.id, otherUser.jwtToken)              
+            await _editProfile(newUserOther, otherUser.id, otherUser.jwtToken)              
             
             await request(app.getHttpServer())
                 .get('/' + otherUser.id + '/subscribers')
@@ -542,20 +542,20 @@ describe('AppController (e2e)', () => {
                 .expect(403)
 
             //возврат профилей в прежнее состояние
-            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userOther, otherUser.id, otherUser.jwtToken)
 
             done();
         });
 
         it('/:id/subscribers and /:id/subscriptions (GET) subscribers and subscriptions of otherUser with closed profile if your a subsriber', async (done) => {
-            const userMe = deepCopyUser((await getProfile(me.id, me.jwtToken)).body)
-            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            const userMe = _deepCopyUser((await _getProfile(me.id, me.jwtToken)).body)
+            const userOther = _deepCopyUser((await _getProfile(otherUser.id, otherUser.jwtToken)).body)
 
-            await subscribe(otherUser.id, me.jwtToken)
+            await _subscribe(otherUser.id, me.jwtToken)
 
-            const newUserOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            const newUserOther = _deepCopyUser((await _getProfile(otherUser.id, otherUser.jwtToken)).body)
             newUserOther.profilePrivatType = profilePrivatType.closed
-            await editProfile(newUserOther, otherUser.id, otherUser.jwtToken)              
+            await _editProfile(newUserOther, otherUser.id, otherUser.jwtToken)              
             
             await request(app.getHttpServer())
                 .get('/' + otherUser.id + '/subscribers')
@@ -568,17 +568,17 @@ describe('AppController (e2e)', () => {
                 .expect(200)
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMe, me.id, me.jwtToken)
-            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userMe, me.id, me.jwtToken)
+            await _editProfile(userOther, otherUser.id, otherUser.jwtToken)
 
             done();
         });
 
         it('/:id/subscriptions (GET) subscriptions of myself', async (done) => {
-            const userMe = deepCopyUser((await getProfile(me.id, me.jwtToken)).body)
-            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            const userMe = _deepCopyUser((await _getProfile(me.id, me.jwtToken)).body)
+            const userOther = _deepCopyUser((await _getProfile(otherUser.id, otherUser.jwtToken)).body)
             
-            await subscribe(otherUser.id, me.jwtToken);
+            await _subscribe(otherUser.id, me.jwtToken);
             await request(app.getHttpServer())
                 .get('/' + me.id + '/subscriptions')
                 .set('Authorization', 'Bearer ' + me.jwtToken)
@@ -590,17 +590,17 @@ describe('AppController (e2e)', () => {
                 })
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMe, me.id, me.jwtToken)
-            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userMe, me.id, me.jwtToken)
+            await _editProfile(userOther, otherUser.id, otherUser.jwtToken)
             
             done();
         });
 
         it('/:id/subscriptions (GET) subscriptions of otherUser', async (done) => {
-            const userMe = deepCopyUser((await getProfile(me.id, me.jwtToken)).body)
-            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            const userMe = _deepCopyUser((await _getProfile(me.id, me.jwtToken)).body)
+            const userOther = _deepCopyUser((await _getProfile(otherUser.id, otherUser.jwtToken)).body)
             
-            await subscribe(me.id, otherUser.jwtToken);
+            await _subscribe(me.id, otherUser.jwtToken);
             await request(app.getHttpServer())
                 .get('/' + otherUser.id + '/subscriptions')
                 .set('Authorization', 'Bearer ' + me.jwtToken)
@@ -612,18 +612,18 @@ describe('AppController (e2e)', () => {
                 })
 
             //возврат профилей в прежнее состояние
-            await editProfile(userMe, me.id, me.jwtToken)
-            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userMe, me.id, me.jwtToken)
+            await _editProfile(userOther, otherUser.id, otherUser.jwtToken)
             
             done();
         });
 
         it('/:id/subscriptions (GET) subscriptions of otherUser with closed profile', async (done) => {
-            const userOther = deepCopyUser((await getProfile(otherUser.id, otherUser.jwtToken)).body)
+            const userOther = _deepCopyUser((await _getProfile(otherUser.id, otherUser.jwtToken)).body)
 
-            const newUserOther = deepCopyUser(userOther)
+            const newUserOther = _deepCopyUser(userOther)
             newUserOther.profilePrivatType = profilePrivatType.closed
-            await editProfile(newUserOther, otherUser.id, otherUser.jwtToken)              
+            await _editProfile(newUserOther, otherUser.id, otherUser.jwtToken)              
             
             await request(app.getHttpServer())
                 .get('/' + otherUser.id + '/subscriptions')
@@ -631,7 +631,7 @@ describe('AppController (e2e)', () => {
                 .expect(403)
 
             //возврат профилей в прежнее состояние
-            await editProfile(userOther, otherUser.id, otherUser.jwtToken)
+            await _editProfile(userOther, otherUser.id, otherUser.jwtToken)
 
             done();
         });

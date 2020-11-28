@@ -3,13 +3,13 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Request, UseGuards } f
 import { TabletopDto } from 'src/tabletop/dto/tabletop.dto';
 import { ITabletop } from 'src/tabletop/interface/tabletop.interface';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
-import { UsersTabletopsService } from './user-tabletops.service';
+import { UserTabletopsService } from './user-tabletops.service';
 
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class UserTabletopsController {
     constructor(
-        private userTabletopsService: UsersTabletopsService,
+        private userTabletopsService: UserTabletopsService,
         ) {}
 
     @Get(':id/tabletops')

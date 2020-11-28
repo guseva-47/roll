@@ -1,8 +1,6 @@
-import { BadRequestException, Controller, Get, Param, Put, Request, Body, Response, UseGuards, LoggerService, Logger,} from '@nestjs/common';
+import { Controller, Get, Request, Response, UseGuards, LoggerService, Logger, Query,} from '@nestjs/common';
 
 import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
-import { UserService } from './user/user.service';
-import { UserDto } from './user/dto/user.dto';
 import { TrueRandomeService } from './true-randome/true-randome.service';
 
 // todo поставиьт точки с запятыми
@@ -12,16 +10,15 @@ export class AppController {
     private readonly logger: LoggerService = new Logger(AppController.name)
 
     constructor(
-        private userService: UserService,
         private trueRandomeService: TrueRandomeService
     ) {}
-    
+
     @Get('rand')
-    async getRandom(@Body() params: {count: string, min: string, max: string}) {
+    async getRandom(@Query() params: {count: string, min: string, max: string}) {
         this.logger.log('getRandom() get запрос на случайные числа.')
 
         const result = this.trueRandomeService.getNum(Number(params.count), Number(params.min), Number(params.max));
-        this.logger.log('getRandom() возвращение результата ${result.toString()}.')
+        this.logger.log(`getRandom() возвращение результата ${result.toString()}.`)
         return result;
     }
 
@@ -46,35 +43,5 @@ export class AppController {
     getOk(@Request() req) {
         return req.user;
     }
-
-    @Get('allUsers')
-    async getAll() {
-        return this.userService.allUsers();
-    }
-
-    @Get('deleteall')
-    async getDeleteAllUsers() {
-        return this.userService.deleteAllUsers();
-    }
-
-    @Get(':id')
-    @UseGuards(JwtAuthGuard)
-    async getProfile(@Param('id') idSomeUser: string, @Request() req) {
-
-        const idMe = req.user.id
-
-        if (idMe === idSomeUser)
-            return this.userService.getUser(idMe);
-
-        return this.userService.getUser(idMe, idSomeUser);
-    }
-
-    @Put(':id')
-    @UseGuards(JwtAuthGuard)
-    async editProfile(@Body() userDto: UserDto, @Request() req) {
-
-        const idMe = req.user.id;
-        if (idMe !== userDto._id) throw new BadRequestException();
-        return this.userService._updateProfile(userDto)
-    }
+    
 }

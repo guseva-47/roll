@@ -8,14 +8,12 @@ import { IUser } from "./interface/user.interface";
 import { UserService } from "./user.service";
 
 @Injectable()
-export class UsersTabletopsService {
+export class UserTabletopsService {
 	constructor(
 		private tabletopService: TabletopService,
 		private userService: UserService,
-	) { }
-
-	// todo све игры пользователя, все игры где ты хозяин, исключиться из игры
-
+    ) { }
+    
 	async getAllTabletops(idMe: string, idSomeUser?: string): Promise<Array<ITabletop>> {
 
 		if (!idSomeUser || idMe === idSomeUser)
