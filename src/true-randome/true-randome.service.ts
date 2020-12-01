@@ -70,11 +70,9 @@ export class TrueRandomeService {
                 if (response.status == 200) {
                     this.logger.log('_addTrueRandomeNums(). Ответ принят успешно.');
 
-                    const seeds = response.data.split('\n').filter(current => current !== '');
+                    const seeds = response.data.split('\n').filter(current => current.length > 0);
                     
                     this.logger.log(`Хранилище до добавления в него новых строк : [${this.seedsStorage.toString()}]`)
-
-                    this.seedsStorage.concat(seeds);
 
                     seeds.forEach(curr => this.seedsStorage.push(curr))
 

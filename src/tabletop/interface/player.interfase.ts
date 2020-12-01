@@ -1,6 +1,6 @@
-import { roleEnum } from "src/user/enum/role.enum";
+import { gameRole } from "../enum/game-role.enum";
 
 export interface IPlayer {
     readonly user: string;
-    readonly role: roleEnum;
+    readonly role: gameRole;
 }
