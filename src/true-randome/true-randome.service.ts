@@ -1,19 +1,18 @@
 import { HttpService, Injectable, Logger, LoggerService } from '@nestjs/common';
-import * as random from 'random';
 
 import { ServiceUnavailable } from './exception/servise-unavailable.exception';
+import { RandomeAdapter } from './randome-adapter';
 
 
 @Injectable()
-export class TrueRandomeService {
+export class TrueRandomeService implements IRand {
 
     private readonly seedsStorage: Array<string> = new Array<string>(); // список случайных чисел
-    private readonly spareSeed = process.env.SEED_FOR_RANDOMIZER;
 
     private countOfUsed = 0; // солько раз использовали генератор с момента последнего засева
-    private readonly maxCountOfUsed = 100; // максимальное количсетво раз, сколько можно использовать генератор с момента последнего засева
+    private readonly maxCountOfUsed = 10**6; // максимальное количсетво раз, сколько можно использовать генератор с момента последнего засева
 
-    private readonly isActive = true;
+    private readonly isActive = false;
     private readonly queryConsts = {
         num: 3, // количество строк, запрашиваемое у сервиса randoom.org
         len: 3,
@@ -25,18 +24,18 @@ export class TrueRandomeService {
         rnd: 'new',
     }
 
-    private rand; // генератор случайных чисел
+    private rand: IRand; // генератор случайных чисел
 
     private readonly logger: LoggerService = new Logger(TrueRandomeService.name)
 
 
     constructor(private httpService: HttpService) {
         // todo
-        this.logger.log('Конструктор. Инициализация генератора стандартным зерном.')
+        this.logger.log('Конструктор. Инициализация генератора стандартным зерном.');
         // засеять генератор чем-то посредственным
-        this.rand = random.clone(Date.now().toString())
+        this.rand = new RandomeAdapter(Date.now().toString());
         // асинхронное засеивание генератора
-        this._sowing()
+        this.sowing();
     }
 
     private async _addTrueRandomeNums(): Promise<any> {
@@ -45,6 +44,7 @@ export class TrueRandomeService {
         if (!this.isActive){
             this.logger.log('Обращение к сервису randome.org остановленно разработчиком, возможно, в целях тестирования. Генератор будет засеян стандартным зерном.')
             this.seedsStorage.push(Date.now().toString());
+            return;
         }
         
         // https://www.random.org/strings/?num=10&len=8&digits=on&upperalpha=on&loweralpha=on&unique=on&format=html&rnd=new
@@ -91,49 +91,45 @@ export class TrueRandomeService {
             });
     }
 
-    private async _sowing(): Promise<any> {
+    async sowing(): Promise<any> {
         this.logger.log('_sowing(). Метод засеивания генератора случайных чисел.')
         this.logger.log(`_sowing(). Состояние хранилища зёрен = [${this.seedsStorage}]`);
 
         if (this.seedsStorage.length <= 0) {
-            this.logger.log('_sowing(). Хранилище истинно случайных строк пусто.')
+            this.logger.log('_sowing(). Хранилище истинно случайных строк пусто.');
             // нужно дополнить генератор
-            await this._addTrueRandomeNums()
+            await this._addTrueRandomeNums();
         }
 
         const newSeed = this.seedsStorage.pop();
         
         // засеивание генератора
-        this.rand = random.clone(newSeed)
-        this.logger.log(`_sowing(). Состояние хранилища зёрен = [${this.seedsStorage}]`);
-        this.logger.log('_sowing(). Генератор успешно проинициализирован.')
+        this.rand = this.rand.sowing(newSeed);
+        //this.logger.log(`_sowing(). Состояние хранилища зёрен = [${this.seedsStorage}]`);
+        this.logger.log('_sowing(). Генератор успешно проинициализирован.');
 
         this.countOfUsed = 0;
     }
 
-    getNum(count = 1, min = 1, max = 20): Array<number> {
+    getNums(min = 1, max = 20, count = 1): Array<number> {
 
-        this.logger.log(`getNum(). Получение случайных чисел в количестве ${count}, из диапазона [${min} ; ${max}].`);
+        this.logger.log(`getNums(). Получение случайных чисел в количестве ${count}, из диапазона [${min} ; ${max}].`);
 
-        count = Math.round(count)
+        count = Math.round(count);
         if (count <= 0 || min >= max) {
-            this.logger.error(`getNum(). ${count} <= 0 || ${min} >= ${max}`)
+            this.logger.error(`getNums(). ${count} <= 0 || ${min} >= ${max}`);
             
             throw new Error(`${count} <= 0 || ${min} >= ${max}`);
         }
         
         this.countOfUsed += count;
 
-        const result: number[] = new Array<number>();
-        for (let i = 0; i < count; i++) {
-            const num: number = this.rand.int(min, max);
-            result.push(num);
-        }
+        const result: number[] = this.rand.getNums(min, max, count);
         
         if (this.countOfUsed >= this.maxCountOfUsed){
-            this.logger.log(`getNum(). Количество запрошенных случайных чисел привысило лимит. Нужно обновить генератор новым зерном.`);
+            this.logger.log(`getNums(). Количество запрошенных случайных чисел привысило лимит. Нужно обновить генератор новым зерном.`);
 
-            this._sowing();
+            this.sowing();
         }
         
         return result;        
