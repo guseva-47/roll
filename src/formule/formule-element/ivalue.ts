@@ -1,0 +1,3 @@
+interface IValue {
+    calc(): number;
+}

@@ -1,0 +1,3 @@
+interface IIterable {
+    getIterator(): IIterator;
+}
