@@ -12,4 +12,10 @@ export class Sum implements IValue {
         this.logger.log('calc(). Сумирование.');
         return this.list[0].calc() + this.list[1].calc();
     }
+
+    clone(): Sum {
+        this.logger.log('clone()');
+        const newList = this.list.map(current => current.clone());
+        return new Sum(newList);
+    }
 }

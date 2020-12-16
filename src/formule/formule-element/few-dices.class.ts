@@ -21,4 +21,9 @@ export class FewDices extends ValueDecorator {
 
         return sum;
     }
+
+    clone(): ValueDecorator {
+        this.logger.log('clone()');
+        return new FewDices(this.dice, this.diceCount);
+    }
 }

@@ -23,15 +23,25 @@ export class Formule implements IIterable {
 
     private readonly logger: LoggerService = new Logger(Formule.name);
 
-    constructor(str: string, randome: IRand ) {
+    constructor(randome: IRand, sourceStr: string, prototypeData?: {
+        postfixNotation: Array<string>,
+        formulComposite: IValue,
+    }) {
         this.randome = randome;
-        this.sourceStr = str;
-        const expr = this._stringToExpr(this.sourceStr);
-        this.postfixNotation = this._convert(expr);
-        this.formulComposite = this._createFormula(this.postfixNotation);
+        this.sourceStr = sourceStr;
+
+        if (prototypeData) {
+            this.postfixNotation = prototypeData.postfixNotation.slice();
+            this.formulComposite = prototypeData.formulComposite.clone();
+        }
+        else {
+            const expr = this._stringToExpr(this.sourceStr);
+            this.postfixNotation = this._convert(expr);
+            this.formulComposite = this._createFormula(this.postfixNotation);
+        }
     }
 
-    public calculate(): number {
+    calculate(): number {
         this.logger.log('calc(). Вычисление формулы. (Запуск вычисления композиции).');
         return this.formulComposite.calc();
     }
@@ -91,9 +101,9 @@ export class Formule implements IIterable {
         this.logger.log(`_convert(). Результат преобразованя: [${notation}]`);
 
         return notation;
-    };
+    }
 
-    
+
     private _isInstruction (substring: string): boolean {
         const ch = substring[0];
         if (['^', '*', '/', '+', '-'].includes(ch)) return true;
@@ -169,5 +179,13 @@ export class Formule implements IIterable {
 
     getIterator(): IIterator {
         return new FormuleStageIter(this.postfixNotation);
+    }
+
+    clone(): Formule {
+        this.logger.log('clone()');
+        return new Formule(this.randome, this.sourceStr, {
+            postfixNotation: this.postfixNotation,
+            formulComposite: this.formulComposite,
+        })
     }
 }

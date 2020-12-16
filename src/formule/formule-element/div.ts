@@ -9,4 +9,8 @@ export class Div implements IValue {
     calc(): number {
         return this.list[0].calc() / this.list[1].calc();
     }
+    clone(): Div {
+        const newList = this.list.map(current => current.clone());
+        return new Div(newList);
+    }
 }

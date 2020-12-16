@@ -19,4 +19,9 @@ export class Disadventage extends ValueDecorator {
             return list[1];
         return list[0];
     }
+
+    clone(): Disadventage {
+        this.logger.log('clone()');
+        return new Disadventage(this.dice.clone());
+    }
 }

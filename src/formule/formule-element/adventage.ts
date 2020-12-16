@@ -19,4 +19,8 @@ export class Adventage extends ValueDecorator {
             return list[1];
         return list[0];
     }
+    clone(): Adventage {
+        this.logger.log('clone()');
+        return new Adventage(this.dice.clone());
+    }
 }

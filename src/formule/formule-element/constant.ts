@@ -11,4 +11,9 @@ export class Constant implements IValue {
         this.logger.log('calc(). Константа.');
         return this.value;
     }
+
+    clone(): Constant {
+        this.logger.log('clone()');
+        return new Constant(this.value);
+    }
 }

@@ -16,6 +16,11 @@ export class Dice implements IValue {
         return this._randome();
     }
 
+    clone(): Dice {
+        this.logger.log('clone()');
+        return new Dice(this.amountOfFaces, this.randome);
+    }
+
     private _randome() : number {
         return this.randome.getNums(1, this.amountOfFaces, 1)[0];
     }

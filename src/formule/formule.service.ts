@@ -12,7 +12,7 @@ export class FormuleService {
     getResult(str: string) {
         this.logger.log(`getResult(). Вычислить результат формулы str = ${str}`);
 
-        const formula = new Formule(str, this.randome);
+        const formula = new Formule(this.randome, str);
         const iter = formula.getIterator();
 
         this.logger.log(`getResult(). Вывод этапов рассчета формулы.`);

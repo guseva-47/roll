@@ -11,4 +11,10 @@ export class Mult implements IValue {
         this.logger.log(`calc(). Умножение.`);
         return this.list[0].calc() * this.list[1].calc();
     }
+
+    clone(): Mult {
+        this.logger.log('clone()');
+        const newList = this.list.map(current => current.clone());
+        return new Mult(newList);
+    }
 }

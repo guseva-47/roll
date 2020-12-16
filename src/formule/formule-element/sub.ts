@@ -12,4 +12,10 @@ export class Sub implements IValue {
         this.logger.log('calc(). Вычитание.');
         return this.list[0].calc() - this.list[1].calc();
     }
+
+    clone(): Sub {
+        this.logger.log('clone()');
+        const newList = this.list.map(current => current.clone());
+        return new Sub(newList);
+    }
 }
