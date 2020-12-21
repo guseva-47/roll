@@ -12,6 +12,8 @@ import { TrueRandomeModule } from './true-randome/true-randome.module';
 import { winstoneConfig } from './winston.configure.root';
 import { FormuleModule } from './formule/formule.module';
 import { FormuleController } from './formule/formule.controller';
+import { SheetModule } from './sheet/sheet.module';
+import { SheetController } from './sheet/sheet.controller';
 
 const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/nest-write'
 
@@ -32,8 +34,9 @@ const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/nest-write'
         UserModule,
         TrueRandomeModule,
         FormuleModule,
+        SheetModule,
     ],
-    controllers: [AppController, UserFriendsController, UserTabletopsController, FormuleController ],
+    controllers: [AppController, UserFriendsController, UserTabletopsController, FormuleController, SheetController, ],
     providers: [Logger]
 })
 export class AppModule { }

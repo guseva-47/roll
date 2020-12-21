@@ -1,0 +1,3 @@
+interface IPlayerSheet {
+    playerId: string;
+}
