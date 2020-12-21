@@ -10,10 +10,10 @@ export class SheetService {
 
     private _getGameSystem(gameSystem: gameSystemEnum) {
         if (gameSystem == gameSystemEnum.crashpandas)
-            return new SheetFactoryCrashPandas();
+            return SheetFactoryCrashPandas.getInstance();
 
         else if (gameSystem == gameSystemEnum.honeyheist)
-            return new SheetFactoryHoneyheist();
+            return SheetFactoryHoneyheist.getInstance();
         
         return null;
     }
@@ -23,7 +23,7 @@ export class SheetService {
         const gameSystem = this._getGameSystem(gameSystemType);
         if (!gameSystem) throw new BadRequestException;
         
-        return gameSystem.createNPCSheet();        
+        return gameSystem.createNPCSheet();
     }
     createPlayerSheet(gameSystemType: gameSystemEnum): IPlayerSheet {
         this.logger.log(`createNPCSheet(): IPlayerSheet создание листа игрока для игры с типом ${gameSystemType}.`)

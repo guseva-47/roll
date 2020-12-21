@@ -4,8 +4,20 @@ import { NPCCrashpandasSheet } from "./npc.crashpandas.sheet";
 import { PlayerCrashpandasSheet } from "./player.crashpandas.sheet";
 
 export class SheetFactoryCrashPandas implements ISheetFactory {
+
+    private static instance = null;
     private readonly logger: LoggerService = new Logger(SheetFactoryCrashPandas.name);
+
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    private constructor() {}
     
+    static getInstance() : ISheetFactory {
+        if (!SheetFactoryCrashPandas.instance) {
+            SheetFactoryCrashPandas.instance = new SheetFactoryCrashPandas();
+        }
+        return SheetFactoryCrashPandas.instance;
+    }
+
     createNPCSheet(): INPCSheet {
         this.logger.log(`createNPCSheet(): INPCSheet возвращение нового листа.`);
         return new NPCCrashpandasSheet('', {} as ISkillsCrashpandas);
