@@ -90,4 +90,5 @@ export class TabletopService {
     async removeAllTables() {
         await this.tabletopModel.find().remove().exec();
     }
+
 }

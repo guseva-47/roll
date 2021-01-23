@@ -6,22 +6,22 @@ import { Dice } from "./dice";
 import { Disadventage } from "./disadventage";
 import { Div } from "./div";
 import { FewDices } from "./few-dices.class";
-import { FormuleStageIter } from "./iterator/formule-stage.iterator";
+import { FormulaStageIter } from "./iterator/formula-stage.iterator";
 import { Mult } from "./mult";
 import { Pow } from "./pow";
 import { Sub } from "./sub";
 import { Sum } from "./sum";
 
 @Injectable()
-export class Formule implements IIterable {
+export class Formula implements IIterable {
 
     private sourceStr: string;
     private postfixNotation: Array<string>;
     private formulComposite: IValue;
 
-    private readonly randome: IRand;
+    private randome: IRand;
 
-    private readonly logger: LoggerService = new Logger(Formule.name);
+    private readonly logger: LoggerService = new Logger(Formula.name);
 
     constructor(randome: IRand, sourceStr: string, prototypeData?: {
         postfixNotation: Array<string>,
@@ -177,15 +177,54 @@ export class Formule implements IIterable {
         return (newNotation.length === 1 ? newNotation[0] : undefined);
     };
 
-    getIterator(): IIterator {
-        return new FormuleStageIter(this.postfixNotation);
+    setRandomiser(newRand: IRand) {
+        this.randome = newRand;
+        this.formulComposite = new Formula(newRand, this.sourceStr).formulComposite;
     }
 
-    clone(): Formule {
+    getIterator(): IIterator {
+        return new FormulaStageIter(this.postfixNotation);
+    }
+
+    clone(): Formula {
         this.logger.log('clone()');
-        return new Formule(this.randome, this.sourceStr, {
+        return new Formula(this.randome, this.sourceStr, {
             postfixNotation: this.postfixNotation,
             formulComposite: this.formulComposite,
         })
+    }
+
+    private Memento = class {
+        readonly formulComposite: IValue;
+        readonly postfixNotation: Array<string>;
+        
+        constructor(
+            readonly formula: Formula,
+            formulComposite: IValue,
+            readonly sourceStr: string,
+            postfixNotation: Array<string>, 
+            readonly randome: IRand, 
+        ) 
+        {
+            formula.logger.log('Memento(). конструктор снимка.');
+            this.formulComposite = formulComposite.clone();
+            this.postfixNotation = postfixNotation.slice();
+        }
+    
+        restore() {
+            this.formula.logger.log('Memento.restore(). Восстановление формулы по снимку.');
+            this.formula.formulComposite = this.formulComposite;
+            this.formula.sourceStr = this.sourceStr;
+            this.formula.postfixNotation = this.postfixNotation;
+            this.formula.randome = this.randome;
+            return this.formula;
+        }
+    }
+
+    createSnapshot() {
+        this.logger.log('createSnapshot(). Создание снимка.');
+        
+        return new this.Memento(this, this.formulComposite, this.sourceStr,
+                this.postfixNotation, this.randome);        
     }
 }

@@ -10,10 +10,12 @@ import { UserFriendsController } from './user/user-friends.controller';
 import { UserTabletopsController } from './user/user-tabletops.controller';
 import { TrueRandomeModule } from './true-randome/true-randome.module';
 import { winstoneConfig } from './winston.configure.root';
-import { FormuleModule } from './formule/formule.module';
-import { FormuleController } from './formule/formule.controller';
+import { FormulaModule } from './formula/formula.module';
+import { FormulaController } from './formula/formula.controller';
 import { SheetModule } from './sheet/sheet.module';
 import { SheetController } from './sheet/sheet.controller';
+import { CompendiumModule } from './compendium/compendium.module';
+import { NoteModule } from './note/note.module';
 
 const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/nest-write'
 
@@ -33,10 +35,12 @@ const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/nest-write'
         AuthModule,
         UserModule,
         TrueRandomeModule,
-        FormuleModule,
+        FormulaModule,
         SheetModule,
+        CompendiumModule,
+        NoteModule,
     ],
-    controllers: [AppController, UserFriendsController, UserTabletopsController, FormuleController, SheetController, ],
+    controllers: [AppController, UserFriendsController, UserTabletopsController, FormulaController, SheetController, ],
     providers: [Logger]
 })
 export class AppModule { }

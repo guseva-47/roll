@@ -1,3 +1,4 @@
+import { IVisitor } from "../visitor/visitor.interface";
 import { CrashpandasSheet } from "./crashpandas.sheet";
 
 export class PlayerCrashpandasSheet extends CrashpandasSheet implements IPlayerSheet{
@@ -6,6 +7,13 @@ export class PlayerCrashpandasSheet extends CrashpandasSheet implements IPlayerS
     constructor(playerId: string, skills: ISkillsCrashpandas) {
         super(skills);
         this.playerId = playerId;
-    }
-    
+    };
+
+    getInfo(): Record<string, unknown> {
+        return {skills: this.skills};
+    };
+
+    convert(v: IVisitor): string {
+        return v.visitPlayerCrashpandas(this);
+    };
 }

@@ -2,6 +2,7 @@ import { BadRequestException, Controller, Get, Logger, LoggerService, Param } fr
 
 import { SheetService } from './sheet.service';
 import { gameSystem as gameSystemEnum } from "./enum/game-system.enum";
+import { NPCHoneyheistSheet } from './honeyheist/npc.honeyheist.sheet';
 
 @Controller('sheet')
 export class SheetController {

@@ -12,7 +12,7 @@ export const TabletopSchema = new mongoose.Schema({
     players: [{ 
         user: {type: mongoose.Schema.Types.ObjectId, required: true},
         role: {type: String, required: true, enum: Object.values(gameRole)},
-    }] ,
+    }],
 
     avatar: { type: String, required: false },
     aboutInfo: { type: String, required: false },

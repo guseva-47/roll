@@ -1,5 +1,5 @@
-// название FormuleStageIter заменить на типа этапы вычислений постфиксной нотации
-export class FormuleStageIter implements IIterator {
+// todo название FormulaStageIter заменить на типа этапы вычислений постфиксной нотации
+export class FormulaStageIter implements IIterator {
     private current = 0;
     private stages = [];
 
