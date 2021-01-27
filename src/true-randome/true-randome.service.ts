@@ -30,7 +30,6 @@ export class TrueRandomeService implements IRand {
 
 
     constructor(private httpService: HttpService) {
-        // todo
         this.logger.log('Конструктор. Инициализация генератора стандартным зерном.');
         // засеять генератор чем-то посредственным
         this.rand = new RandomeAdapter(Date.now().toString());
