@@ -26,7 +26,6 @@ export class SheetController {
         return this.sheetService.createNPCSheet(gameSystem as gameSystemEnum);
     }
 
-    // \/sheet/new/honeyheist?npc=3&p=5"
     @Get('new/:gameSystem')
     getNewPlayerSheet(@Param('gameSystem') gameSystem: gameSystemEnum, @Query('npc') npc: number, @Query('p') p:number) {
         
