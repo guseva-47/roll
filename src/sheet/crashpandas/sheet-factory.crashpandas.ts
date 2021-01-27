@@ -2,6 +2,7 @@ import { Logger, LoggerService } from "@nestjs/common";
 
 import { NPCCrashpandasSheet } from "./npc.crashpandas.sheet";
 import { PlayerCrashpandasSheet } from "./player.crashpandas.sheet";
+import { ISkillsCrashpandas } from "./skills.crashpandas";
 
 export class SheetFactoryCrashPandas implements ISheetFactory {
 
@@ -9,7 +10,9 @@ export class SheetFactoryCrashPandas implements ISheetFactory {
     private readonly logger: LoggerService = new Logger(SheetFactoryCrashPandas.name);
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {}
+    private constructor() {
+        this.logger.log('SheetFactoryCrashPandas() Приватный конструктор фабрики.')
+    }
     
     static getInstance() : ISheetFactory {
         if (!SheetFactoryCrashPandas.instance) {

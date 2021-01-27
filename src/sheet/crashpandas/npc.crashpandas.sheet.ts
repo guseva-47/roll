@@ -1,5 +1,6 @@
 import { IVisitor } from "../visitor/visitor.interface";
 import { CrashpandasSheet } from "./crashpandas.sheet";
+import { ISkillsCrashpandas } from "./skills.crashpandas";
 
 export class NPCCrashpandasSheet extends CrashpandasSheet implements INPCSheet {
     public monsterType: string;

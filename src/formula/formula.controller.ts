@@ -36,4 +36,13 @@ export class FormulaController {
 
         return this.formulaService.testObserver();
     }
+
+    @Get('test-proto')
+    getTestProto(@Query('formula') formula) {
+
+        this.logger.log(`getTesProto(). Запрос: тест паттерна Прототип. formula = ${formula}`);
+        if (formula.lenght == 0) return 0;
+
+        return this.formulaService.testPrototype(formula);
+    }
 }

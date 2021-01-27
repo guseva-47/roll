@@ -39,6 +39,15 @@ export class FormulaService {
         return null;
     }
 
+    testPrototype(str: string) {
+        this.logger.log(`testPrototype(). Создание формулы по строке ${str}`);
+        const formula = new Formula(this.randome, str);
+        this.logger.log(`testPrototype(). Клонирование формулы`);
+        const newFormula = formula.clone();
+        this.logger.log(`testPrototype(). formula и newFormula - один объект is ${newFormula == formula}`);
+
+    }
+
     testMemento(str: string, num: number) {
         const newRand1 = class R1 implements IRand {
             // eslint-disable-next-line @typescript-eslint/no-empty-function

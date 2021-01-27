@@ -1,3 +1,4 @@
+import { Logger, LoggerService } from "@nestjs/common";
 import { CrashpandasSheet } from "../crashpandas/crashpandas.sheet";
 import { NPCCrashpandasSheet } from "../crashpandas/npc.crashpandas.sheet";
 import { PlayerCrashpandasSheet } from "../crashpandas/player.crashpandas.sheet";
@@ -6,30 +7,38 @@ import { NPCHoneyheistSheet } from "../honeyheist/npc.honeyheist.sheet";
 import { PlayerHoneyheistSheet } from "../honeyheist/player.honeyheist.sheet";
 import { IVisitor } from "./visitor.interface";
 
-class HTMLVisitor implements IVisitor {
-
+export class HTMLVisitor implements IVisitor {
+    private readonly logger: LoggerService = new Logger(HTMLVisitor.name);
+    
     visitCrashpandas(c: CrashpandasSheet): string {
+        this.logger.log('visitCrashpandas(). Конвертация в HTML.');
         const info = {skills: c.getSkills()}
         return this.html(info, 'Crashpandas base sheet');
     }
     visitNPCCrashpandas(c: NPCCrashpandasSheet): string {
-        const info = {skills: c.getInfo()}
+        this.logger.log('visitNPCCrashpandas(). Конвертация в HTML.');
+        const inf = c.getInfo();
+        const info = {skills: inf.skills, monsterType: {monsterType: inf.monsterType} }
         return this.html(info, 'Crashpandas NPC sheet');
     }
     visitPlayerCrashpandas(c: PlayerCrashpandasSheet): string {
-        const info = {skills: c.getInfo()}
+        this.logger.log('visitPlayerCrashpandas(). Конвертация в HTML.');
+        const info = {skills: c.getInfo().skills}
         return this.html(info, 'Crashpandas player sheet');
     }
     visitHoneyHeist(c: HoneyheistSheet): string {
-        const info = {skills: c.getSkills()}
+        this.logger.log('visitHoneyHeist(). Конвертация в HTML.');
+        const info = {stats: c.getSkills()}
         return this.html(info, 'HoneyheistSheet base sheet');
     }
     visitNPCHoneyHeist(c: NPCHoneyheistSheet): string {
-        const info = {skills: c.getSkills()}
+        this.logger.log('visitNPCHoneyHeist(). Конвертация в HTML.');
+        const info = {stats: c.getSkills()}
         return this.html(info, 'HoneyheistSheet NPC sheet');
     }
     visitPlayerHoneyheist(c: PlayerHoneyheistSheet): string {
-        const info = {skills: c.getSkills()}
+        this.logger.log('visitPlayerHoneyheist(). Конвертация в HTML.');
+        const info = {stats: c.getSkills()}
         return this.html(info, 'HoneyheistSheet player sheet');
     }
 
@@ -39,7 +48,7 @@ class HTMLVisitor implements IVisitor {
             doc += "\t<head>\n";
             doc += "\t\t<meta charset=\"utf-8\">\n";
             doc += `\t\t<title>${title}</title>\n`;
-            doc += "\t\t<style> p { color:  black; } </style>";
+            doc += "\t\t<style> p { color:  black; } </style>\n";
             doc += "\t</head>\n";
             doc += "\t<body>\n";
             doc += `\t\t<p>${title}</p>\n`;
@@ -52,10 +61,10 @@ class HTMLVisitor implements IVisitor {
            
             doc += `\t\t\t<caption>${titleTable}</caption>\n`;
             for (const skillName in table) {
-                doc += '\t\t\t<tr>'
-                doc += `<td>${skillName}</td>\n`
-                doc += `<td>${table[skillName]}</td>\n`
-                doc += '</tr>\n'
+                doc += '\t\t\t<tr>\t'
+                doc += `<td>${skillName}</td>\t`
+                doc += `<td>${table[skillName]}</td>`
+                doc += '\t</tr>\n'
             }
 
             doc += `\t\t</table>\n`;

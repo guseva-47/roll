@@ -1,5 +1,6 @@
 import { IVisitor } from "../visitor/visitor.interface";
 import { CrashpandasSheet } from "./crashpandas.sheet";
+import { ISkillsCrashpandas } from "./skills.crashpandas";
 
 export class PlayerCrashpandasSheet extends CrashpandasSheet implements IPlayerSheet{
     playerId: string;

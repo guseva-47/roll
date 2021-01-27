@@ -6,6 +6,7 @@ import { Dice } from "./dice";
 import { Disadventage } from "./disadventage";
 import { Div } from "./div";
 import { FewDices } from "./few-dices.class";
+import { IPrototype } from "./interface/IPrototype";
 import { FormulaStageIter } from "./iterator/formula-stage.iterator";
 import { Mult } from "./mult";
 import { Pow } from "./pow";
@@ -13,7 +14,7 @@ import { Sub } from "./sub";
 import { Sum } from "./sum";
 
 @Injectable()
-export class Formula implements IIterable {
+export class Formula implements IIterable, IPrototype {
 
     private sourceStr: string;
     private postfixNotation: Array<string>;

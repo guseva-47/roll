@@ -1,8 +1,7 @@
-import { BadRequestException, Controller, Get, Logger, LoggerService, Param } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Logger, LoggerService, Param, Query } from '@nestjs/common';
 
 import { SheetService } from './sheet.service';
 import { gameSystem as gameSystemEnum } from "./enum/game-system.enum";
-import { NPCHoneyheistSheet } from './honeyheist/npc.honeyheist.sheet';
 
 @Controller('sheet')
 export class SheetController {
@@ -27,13 +26,20 @@ export class SheetController {
         return this.sheetService.createNPCSheet(gameSystem as gameSystemEnum);
     }
 
-    @Get('newPlayerSheet/:gameSystem')
-    getNewPlayerSheet(@Param('gameSystem') gameSystem: string): IPlayerSheet {
+    // \/sheet/new/honeyheist?npc=3&p=5"
+    @Get('new/:gameSystem')
+    getNewPlayerSheet(@Param('gameSystem') gameSystem: gameSystemEnum, @Query('npc') npc: number, @Query('p') p:number) {
         
         if ( !Object.values(gameSystemEnum).includes(gameSystem as gameSystemEnum) )
             throw new BadRequestException;
 
-        return this.sheetService.createPlayerSheet(gameSystem as gameSystemEnum);
+        return this.sheetService.createSheets(gameSystem, npc, p)
+    }
+
+    @Get('test-visitor')
+    getTestVisitor() {
+        this.logger.log('getTestVisitor(). Запрос: тест паттерна посетитель');
+        return this.sheetService.testVisitor();
     }
 
 }

@@ -8,7 +8,9 @@ export class SheetFactoryHoneyheist implements ISheetFactory {
     private readonly logger: LoggerService = new Logger(SheetFactoryHoneyheist.name);
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {}
+    private constructor() {
+        this.logger.log(`SheetFactoryHoneyheist() Приватный конструктор фабрики.`);
+    }
     
     static getInstance() : ISheetFactory {
         if (!SheetFactoryHoneyheist.instance) {

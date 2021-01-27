@@ -1,4 +1,4 @@
-interface ISkillsCrashpandas {
+export interface ISkillsCrashpandas {
     alacrity: number;
     chutzpah: number;
     ferouciousness: number;
