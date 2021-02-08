@@ -15,7 +15,7 @@ export class UserTabletopsController {
     @Get(':id/tabletops')
     async getAllTabletops(@Param('id') idSomeUser: string, @Request() req) {
         
-        const idMe = req.user.id
+        const idMe = req.user.id;
         if (idMe === idSomeUser)
             return await this.userTabletopsService.getAllTabletops(idMe);
         

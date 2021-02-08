@@ -10,12 +10,12 @@ export class AppController {
     private readonly logger: LoggerService = new Logger(AppController.name)
 
     constructor(
-        private trueRandomeService: TrueRandomeService
+        private trueRandomeService: TrueRandomeService,
     ) {}
 
     @Get('rand')
     async getRandom(@Query() params: {count: string, min: string, max: string}) {
-        this.logger.log('getRandom() get запрос на случайные числа.')
+        this.logger.log('getRandom() get запрос на случайные числа.');
 
         const result = this.trueRandomeService.getNums(Number(params.count), Number(params.min), Number(params.max));
         this.logger.log(`getRandom() возвращение результата ${result}.`);
@@ -24,7 +24,7 @@ export class AppController {
 
     @Get()
     getHello(): string {
-        this.logger.log('hello - /')
+        this.logger.log('hello - /');
         return 'hello';
     }
 

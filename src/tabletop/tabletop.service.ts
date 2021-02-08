@@ -20,15 +20,15 @@ export class TabletopService {
         const myTabletops = await this.getCreatedTabletops(idUser);
         const frendlyTabletops = await this.getFrendlyTabletops(idUser);
 
-        return myTabletops.concat(frendlyTabletops)
+        return myTabletops.concat(frendlyTabletops);
     }
 
     async getTabletop(idUser: string, idTabletop: string): Promise<ITabletop> {
         
-        const tabletop = await this._checkTable(idTabletop)
+        const tabletop = await this._checkTable(idTabletop);
 
-        const owner = tabletop.owner + ''
-        const user = idUser + ''
+        const owner = tabletop.owner + '';
+        const user = idUser + '';
 
         if (owner === user || tabletop.players.find(player => player.user === idUser))
             return tabletop;
@@ -37,7 +37,6 @@ export class TabletopService {
     }
 
     async getCreatedTabletops(idUser: string): Promise<Array<ITabletop>> {
-
         return await this.tabletopModel.find({owner: idUser});
     }
 
@@ -55,12 +54,10 @@ export class TabletopService {
 
     async updateTabletop(tabletop: TabletopDto): Promise<ITabletop> {
         
-        this._checkTable(tabletop._id);
+        await this._checkTable(tabletop._id);
 
-        return await (await this.tabletopModel
-            .findByIdAndUpdate(tabletop._id, tabletop)
-            .orFail(new TabletopNotFound))
-            .execPopulate();
+        const oldTable = await this.tabletopModel.findByIdAndUpdate(tabletop._id, tabletop).orFail(new TabletopNotFound);
+        return await oldTable.execPopulate();
     }
 
     async removeTableTop(idUser: string, idTabletop: string): Promise<any> {
@@ -81,14 +78,14 @@ export class TabletopService {
     }
 
     private async _checkTable(idTabletop: string): Promise<ITabletop> {
-        if (!Types.ObjectId.isValid(idTabletop)) throw new BadId;
+        if (!Types.ObjectId.isValid(idTabletop)) throw new BadId;       
 
         const tabletop = await this.tabletopModel.findById(idTabletop).orFail(new TabletopNotFound);
         return await tabletop.execPopulate();
     } 
 
-    async removeAllTables() {
-        await this.tabletopModel.find().remove().exec();
-    }
+    // async removeAllTables() {
+    //     await this.tabletopModel.find().remove().exec();
+    // }
 
 }
