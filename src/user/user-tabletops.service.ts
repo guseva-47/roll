@@ -1,8 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable } from "@nestjs/common";
 
-import { TabletopDto } from "src/tabletop/dto/tabletop.dto";
-import { ITabletop } from "src/tabletop/interface/tabletop.interface";
-import { TabletopService } from "src/tabletop/tabletop.service";
+import { TabletopDto } from "../tabletop/dto/tabletop.dto";
+import { ITabletop } from "../tabletop/interface/tabletop.interface";
+import { TabletopService } from "../tabletop/tabletop.service";
 import { profilePrivatType } from "./enum/profile-privet-type.enum";
 import { IUser } from "./interface/user.interface";
 import { UserService } from "./user.service";
@@ -19,7 +19,7 @@ export class UserTabletopsService {
 		if (!idSomeUser || idMe === idSomeUser)
 			return this.tabletopService.getAllTabletops(idMe);
 
-		const userOther: IUser = await this.userService.getUser(idMe);
+		const userOther: IUser = await this.userService.getUser(idMe, idSomeUser);
 		if (userOther.profilePrivatType === profilePrivatType.closed && !userOther.subscribers.includes(idMe))
 			throw new ForbiddenException();
 
@@ -43,9 +43,9 @@ export class UserTabletopsService {
 		return await this.tabletopService.removeTableTop(idMe, idTabletop);
 	}
 
-    async removeAllTables() {
-        return await this.tabletopService.removeAllTables();
-    }
+    // async removeAllTables() {
+    //     return await this.tabletopService.removeAllTables();
+    // }
 	async createTabletop(idMe: string, tabletop: TabletopDto): Promise<ITabletop> {
         if (tabletop.name == '') throw new BadRequestException;
 		return await this.tabletopService.createTabletop(idMe, tabletop);
