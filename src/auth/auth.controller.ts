@@ -17,7 +17,8 @@ export class AuthController {
     @UseGuards(GoogleAuthGuard)
     async googleAuthRedirect(@Request() req, @Response() res): Promise<any> {
 
-        const jwtToken = this.authService.login(req.user)
+        // const jwtToken = this.authService.login(req.user);
+        this.authService.login(req.user);
 
         res.redirect('/ok')
     }

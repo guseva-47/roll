@@ -3,7 +3,6 @@ import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, StrategyOptionsWithRequest, VerifyCallback, Profile } from 'passport-google-oauth20';
 
 import { CreateUserDto } from "src/user/dto/create-user.dto";
-import { genderEnum } from "src/user/enum/gender.enum";
 import { oauth2Source } from "src/user/enum/oauth2-source.enum";
 
 

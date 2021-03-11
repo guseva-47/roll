@@ -35,10 +35,4 @@ export class SheetController {
         return this.sheetService.createSheets(gameSystem, npc, p)
     }
 
-    @Get('test-visitor')
-    getTestVisitor() {
-        this.logger.log('getTestVisitor(). Запрос: тест паттерна посетитель');
-        return this.sheetService.testVisitor();
-    }
-
 }

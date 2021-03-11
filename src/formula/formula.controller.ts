@@ -20,29 +20,4 @@ export class FormulaController {
         return this.formulaService.getResult(formula);
     }
 
-    @Get('test-memento')
-    getTestMemento(@Query('formula') formula) {
-
-        this.logger.log(`getTestMemento(). Запрос: тест паттерна Снимок. formula = ${formula}`);
-        if (formula.lenght == 0) return 0;
-
-        return this.formulaService.testMemento(formula, 1);
-    }
-
-    @Get('test-observer')
-    getTestObserver() {
-
-        this.logger.log(`getTestObserver(). Запрос: тест паттерна Слушатель.`);
-
-        return this.formulaService.testObserver();
-    }
-
-    @Get('test-proto')
-    getTestProto(@Query('formula') formula) {
-
-        this.logger.log(`getTesProto(). Запрос: тест паттерна Прототип. formula = ${formula}`);
-        if (formula.lenght == 0) return 0;
-
-        return this.formulaService.testPrototype(formula);
-    }
 }

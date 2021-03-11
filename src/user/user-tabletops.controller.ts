@@ -50,10 +50,10 @@ export class UserTabletopsController {
         return await this.userTabletopsService.createTabletop(idMe, tabletopDto);        
     }
 
-    @Delete('delete_all_tables')
-    async deleteAllTabletop(): Promise<void> 
-    {
-        return await this.userTabletopsService.removeAllTables();        
-    }
+    // @Delete('delete_all_tables')
+    // async deleteAllTabletop(): Promise<void> 
+    // {
+    //     //return await this.userTabletopsService.removeAllTables();        
+    // }
     
 }
