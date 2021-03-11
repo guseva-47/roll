@@ -13,9 +13,9 @@ export class FormulaController {
 
     @Get()
     getResult(@Query('formula') formula): number {
-
         this.logger.log(`getResult(). Запрос: вычислить результат формулы formula = ${formula}`);
-        if (formula.lenght == 0) return 0;
+        
+        if (formula.length == 0) return 0;
 
         return this.formulaService.getResult(formula);
     }
