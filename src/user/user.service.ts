@@ -43,7 +43,7 @@ export class UserService {
     async editProfile(userDto: UserDto): Promise<IUser> {
 
         userDto.lastActiveAt = new Date();
-        const user = await this.userModel.findByIdAndUpdate(userDto._id, userDto, { new: true }).orFail(new UserNotFound);
+        const user = await this.userModel.findByIdAndUpdate(userDto._id, userDto, { new: true }).orFail(new UserNotFound());
         return await user.execPopulate();
     }
 
@@ -52,11 +52,11 @@ export class UserService {
         if (idOther && !Types.ObjectId.isValid(idOther)) throw new BadId;
 
         if (!idOther) {
-            const userPromise = await this.userModel.findById(idMe).orFail(new UserNotFound);
+            const userPromise = await this.userModel.findById(idMe).orFail(new UserNotFound());
             return await userPromise.execPopulate();
         }
 
-        const userPromise = await this.userModel.findById(idOther).orFail(new UserNotFound);
+        const userPromise = await this.userModel.findById(idOther).orFail(new UserNotFound());
         const userOther = await userPromise.execPopulate();
 
         if (userOther.profilePrivatType === profilePrivatType.closed && !userOther.subscribers.includes(idMe))
