@@ -3,11 +3,13 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { DocumentBuilder } from '@nestjs/swagger/dist/document-builder';
 import { SwaggerModule } from '@nestjs/swagger/dist/swagger-module';
 import { AppModule } from './app.module';
+import cookieParser from 'cookie-parser';
 
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+    app.use(cookieParser());
 
     const options = new DocumentBuilder()
         .setTitle('Cats example')

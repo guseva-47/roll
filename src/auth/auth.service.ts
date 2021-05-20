@@ -9,6 +9,8 @@ import { UserService } from '../user/user.service';
 import { IJwtAccessPayload } from './interface/jwt-access-payload.interfase';
 import { IJwtRefreshToken } from './interface/jwt-refresh-payload.interfase'
 import { JwtRefreshPayloadDto} from './dto/jwt-refresh-payload.dto'
+import { ITokenObject } from './interface/tokens-object.interface';
+import { InvalidRefreshToken } from './exception/invalid-refresh-token.exception';
 
 
 @Injectable()
@@ -20,7 +22,7 @@ export class AuthService {
         @InjectModel('RefreshTokenSchema') private readonly refreshTokenModel: Model<IJwtRefreshToken>
     ) { }
 
-    async login(userDto: CreateUserDto): Promise<any> {
+    async login(userDto: CreateUserDto): Promise<ITokenObject> {
 
         let existedUser = null;
 
@@ -33,35 +35,65 @@ export class AuthService {
         // TODO какую-то проверку, что пользователь создался/нащелся
         // if(existedUser == null) -- плохо
 
-        const payload: IJwtAccessPayload = {
-            id: existedUser._id,
-            email: existedUser.email,
+        const payload: ITokenObject = {
+            access_token: this.getNewAccessToken(existedUser._id),
+            refresh_token: this.getNewRefreshToken(),
+            token_type: 'Bearer'
         }
 
-        const accessToken = this.jwtService.sign(payload);
-        console.log('logining accses token payload ');
+        await this.saveNewRefreshTokenInDB(existedUser._id, payload.refresh_token);
+
+        console.log('logining token payload ');
         console.log(payload);
-        console.log(accessToken);
 
-        const refresh_token = this.randomString(20);
-        await this.saveRefreshTokenInDB(existedUser._id, refresh_token);
+        return payload;
+    };
 
-        // {
-        //     "access_token": "eyJz93a...k4laUWw",
-        //     "refresh_token": "GEbRxBN...edjnXbL",
-        //     "token_type": "Bearer"
-        //   }
+    async refresh(refreshToken: string): Promise<ITokenObject> {
+        const newRefreshTokenRecord = await this.updateRefreshTokenInDB(refreshToken);
+        const result: ITokenObject = {
+            refresh_token: newRefreshTokenRecord.refreshToken,
+            access_token: this.getNewAccessToken(newRefreshTokenRecord.userId),
+            token_type: 'Bearer'
+        }
+        return result;
+    };
 
-        // сгенерировать строку -- рефреш токен
-        // сохранить его в базу
-        // положить в куки?? Set-Cookie: refreshToken='c84f18a2-c6c7-4850-be15-93f9cbaef3b3'; HttpOnly
+    private async updateRefreshTokenInDB(refreshToken: string): Promise<IJwtRefreshToken> {
+        // проверка, что токен существует
+        console.log(await this.refreshTokenModel.find().exec());
+        const isExist = await this.refreshTokenModel.exists({refreshToken: refreshToken});
+        if (! isExist) throw new InvalidRefreshToken();
+        console.log('1 ok')
 
-        return {
-            access_token: accessToken,
-            refresh_token: refresh_token,
-            token_type: "Bearer"
-        };
-    }
+        // получить запись о токене из базы и удалить из базы
+        let tokenRecordFromDB: IJwtRefreshToken = await this.refreshTokenModel
+            .findOne({refreshToken: refreshToken})
+            .orFail(new InvalidRefreshToken);
+        console.log('2 ok')
+        tokenRecordFromDB = await tokenRecordFromDB.execPopulate();
+
+        await this.refreshTokenModel.deleteOne(tokenRecordFromDB).orFail(new InvalidRefreshToken);
+        console.log('3 ok')
+        
+        // проверить, что время токена Истекло
+        const isExpired = tokenRecordFromDB.expired_at.getTime() < new Date().getTime();
+        if (isExpired) throw new InvalidRefreshToken;
+        console.log('4 ok')
+
+        // записать в базу обновленный токен
+        const newTokenRecord = new JwtRefreshPayloadDto();
+
+        newTokenRecord.updated_at = new Date();
+        newTokenRecord.expired_at = this.getExpiredTime(newTokenRecord.updated_at);
+        newTokenRecord.refreshToken = this.getNewRefreshToken();
+        
+        newTokenRecord.created_at = tokenRecordFromDB.created_at;
+        newTokenRecord.userId = tokenRecordFromDB.userId;
+
+        const createdToken = new this.refreshTokenModel(newTokenRecord);
+        return await createdToken.save();
+    };
 
     private randomString(i: number): string {
         let rnd = '';
@@ -70,9 +102,11 @@ export class AuthService {
         return rnd.substring(0, i);
     };
 
-    private async saveRefreshTokenInDB(userId: string, refreshToken: string): Promise<IJwtRefreshToken> {
-        let tokenRecord: JwtRefreshPayloadDto | IJwtRefreshToken = this.createNewRefreshTokenPayload(userId, refreshToken);
+    private async saveNewRefreshTokenInDB(userId: string, refreshToken: string): Promise<IJwtRefreshToken> {
+
+        const tokenRecord: JwtRefreshPayloadDto = this.createNewRefreshTokenPayload(userId, refreshToken);
         const isExist = await this.refreshTokenModel.exists({userId: userId});
+
         if (isExist) {
             const tokenFromDB = await this.refreshTokenModel
                 .findOne({userId: userId})
@@ -81,31 +115,45 @@ export class AuthService {
             const updatedToken = await this.refreshTokenModel
                 .findByIdAndUpdate(tokenFromDB._id, tokenRecord, { new: true })
                 .orFail(new BadRequestException('The refresh token was not updated.'));
-                
-            tokenRecord = await updatedToken.execPopulate();            
+
+            return await updatedToken.execPopulate();            
         }
-        else {
-            const createdToken = new this.refreshTokenModel(tokenRecord);
-            tokenRecord = await createdToken.save();
-        }
-        
-        return tokenRecord;
-    }
+
+        const createdToken = new this.refreshTokenModel(tokenRecord);
+        return await createdToken.save();
+    };
 
     private createNewRefreshTokenPayload(userId: string, refreshToken: string): JwtRefreshPayloadDto {
-        const tokenRecord: JwtRefreshPayloadDto = {} as JwtRefreshPayloadDto;
+        const tokenRecord: JwtRefreshPayloadDto = new JwtRefreshPayloadDto();
 
         tokenRecord.userId = userId;
 
         tokenRecord.refreshToken = refreshToken;
-        tokenRecord.created_at = new Date();
 
-        const count: number = Number.parseInt(process.env.JWT_REFRESH_TOKEN_PERIOD_COUNT);
-        const type: string = process.env.JWT_REFRESH_TOKEN_PERIOD_TYPE;
-        tokenRecord.expired_at = moment(tokenRecord.created_at).add(count, type as any).toDate();
-        
+        tokenRecord.created_at = new Date();
+        tokenRecord.expired_at = this.getExpiredTime(tokenRecord.created_at);
         tokenRecord.updated_at = tokenRecord.created_at;
         
         return tokenRecord;
-    }
+    };
+
+    private getExpiredTime(start_date: Date): Date {
+        const count: number = Number.parseInt(process.env.JWT_REFRESH_TOKEN_PERIOD_COUNT);
+        const type: string = process.env.JWT_REFRESH_TOKEN_PERIOD_TYPE;
+        const expiredAt = moment(start_date).add(count, type as any).toDate();
+        return expiredAt;
+    };
+
+    private getNewRefreshToken(): string {
+        return this.randomString(20);
+    };
+
+    private getNewAccessToken(userId: string): string {
+        const payload: IJwtAccessPayload = {
+            id: userId,
+            email: '' // TODO: убрать имейлы
+        }
+
+        return this.jwtService.sign(payload);
+    };
 }

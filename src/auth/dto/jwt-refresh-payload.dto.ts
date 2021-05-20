@@ -11,5 +11,4 @@ export class JwtRefreshPayloadDto {
     created_at: Date; // когда был создан
     @IsNotEmpty()
     updated_at: Date; // когда обновлен
-    tokenRecord: any;
 }
