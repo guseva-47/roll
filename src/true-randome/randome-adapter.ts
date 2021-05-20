@@ -1,5 +1,5 @@
 import { Injectable, Logger, LoggerService } from "@nestjs/common";
-import * as random from 'random';
+import random from 'random';
 
 @Injectable()
 export class RandomeAdapter implements IRand{
