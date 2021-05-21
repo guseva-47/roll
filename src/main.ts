@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser';
 
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule, {cors: true});
     app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
     app.use(cookieParser());
 

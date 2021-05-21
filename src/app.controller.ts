@@ -24,7 +24,6 @@ export class AppController {
 
     @Get()
     getHello(): string {
-        this.logger.log('hello - /');
         return 'hello';
     }
 
@@ -42,6 +41,12 @@ export class AppController {
     @UseGuards(JwtAuthGuard)
     getOk(@Request() req) {
         return req.user;
+    }
+
+    @Get('/ping')
+    ping(): string {
+        console.log('ping')
+        return 'ping ok';
     }
     
 }
