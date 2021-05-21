@@ -10,7 +10,7 @@ import { GoogleAuthGuard } from './guard/google-auth.guard';
 import { AuthService } from './auth.service';
 import { ITokenObject } from './interface/tokens-object.interface';
 import { InvalidRefreshToken } from './exception/invalid-refresh-token.exception';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 @Controller('auth')
@@ -47,7 +47,7 @@ export class AuthController {
   }
 
   @Get('/refresh-token') // TODO POST!
-  async refreshToken(@Req() req: Request, @Res() res: Response) {
+  async refreshToken(@Req() req: Request, @Res({passthrough:true}) res: Response) {
     // проверить, что рефреш токен 1)есть, 2)устарел
     // вызвать метод обновления токена, как создание, но не нужно изменять время создания
     console.log('req.cookies');
@@ -84,8 +84,8 @@ export class AuthController {
     //   // path:'/auth', todo включить после отладки
     // });
     // res.header('Authorization', tokens.token_type + ' ' + tokens.access_token);
-    console.log('return res')
-    res.cookie
+    console.log('return res');
+    res.cookie;
     return 'res';
   }
 }

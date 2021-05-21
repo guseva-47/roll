@@ -37,19 +37,19 @@ export class TabletopService {
     }
 
     async getCreatedTabletops(idUser: string): Promise<Array<ITabletop>> {
-        return await this.tabletopModel.find({owner: idUser});
+        return this.tabletopModel.find({owner: idUser});
     }
 
     async getFrendlyTabletops(idUser: string):  Promise<Array<ITabletop>> {
 
-        return await this.tabletopModel.find({user: idUser});
+        return this.tabletopModel.find({user: idUser});
     }
 
     async createTabletop(idUser: string, tabletop: TabletopDto): Promise<ITabletop> {
         
         tabletop.owner = idUser;
         const newTabletop = new this.tabletopModel(tabletop);
-        return await newTabletop.save();        
+        return newTabletop.save();        
     }
 
     async updateTabletop(tabletop: TabletopDto): Promise<ITabletop> {
@@ -57,17 +57,17 @@ export class TabletopService {
         await this._checkTable(tabletop._id);
 
         const oldTable = await this.tabletopModel.findByIdAndUpdate(tabletop._id, tabletop).orFail(new TabletopNotFound);
-        return await oldTable.execPopulate();
+        return oldTable.execPopulate();
     }
 
-    async removeTableTop(idUser: string, idTabletop: string): Promise<any> {
+    async removeTableTop(idUser: string, idTabletop: string): Promise<void> {
         
         const tabletop: ITabletop = await this._checkTable(idTabletop)
         const owner = tabletop.owner + ''
         const user = idUser + ''
         if (owner !== user) throw new ForbiddenException();
         
-        return await this.tabletopModel.deleteOne(tabletop);
+        tabletop.deleteOne();
     }
 
     async rightTransfer(tabletop: TabletopDto, idUserTo: string): Promise<ITabletop> {
@@ -81,7 +81,7 @@ export class TabletopService {
         if (!Types.ObjectId.isValid(idTabletop)) throw new BadId;       
 
         const tabletop = await this.tabletopModel.findById(idTabletop).orFail(new TabletopNotFound);
-        return await tabletop.execPopulate();
+        return tabletop.execPopulate();
     } 
 
     // async removeAllTables() {

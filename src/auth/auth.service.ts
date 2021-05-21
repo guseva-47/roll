@@ -60,27 +60,18 @@ export class AuthService {
     };
 
     private async updateRefreshTokenInDB(refreshToken: string): Promise<IJwtRefreshToken> {
-        // проверка, что токен существует
-        console.log(await this.refreshTokenModel.find().exec());
-        const isExist = await this.refreshTokenModel.exists({refreshToken: refreshToken});
-        if (! isExist) throw new InvalidRefreshToken();
-        console.log('1 ok')
-
-        // получить запись о токене из базы и удалить из базы
-        let tokenRecordFromDB: IJwtRefreshToken = await this.refreshTokenModel
-            .findOne({refreshToken: refreshToken})
-            .orFail(new InvalidRefreshToken);
-        console.log('2 ok')
-        tokenRecordFromDB = await tokenRecordFromDB.execPopulate();
-
-        await this.refreshTokenModel.deleteOne(tokenRecordFromDB).orFail(new InvalidRefreshToken);
-        console.log('3 ok')
+        // получить запись о токене, удалив его из базы
+        const tokenRecordFromDB: IJwtRefreshToken = await this.refreshTokenModel
+            .findOneAndDelete({ refreshToken: refreshToken })
+            .orFail(new InvalidRefreshToken())
+            .exec();
+        console.log('1 old token was gotten; checking if expired')
         
         // проверить, что время токена Истекло
         const isExpired = tokenRecordFromDB.expired_at.getTime() < new Date().getTime();
-        if (isExpired) throw new InvalidRefreshToken;
-        console.log('4 ok')
-
+        if (isExpired) throw new InvalidRefreshToken();
+        console.log('2 token is not expired; saving of a new token')
+        
         // записать в базу обновленный токен
         const newTokenRecord = new JwtRefreshPayloadDto();
 
@@ -91,8 +82,7 @@ export class AuthService {
         newTokenRecord.created_at = tokenRecordFromDB.created_at;
         newTokenRecord.userId = tokenRecordFromDB.userId;
 
-        const createdToken = new this.refreshTokenModel(newTokenRecord);
-        return await createdToken.save();
+        return new this.refreshTokenModel(newTokenRecord).save();
     };
 
     private randomString(i: number): string {
