@@ -43,9 +43,9 @@ export class UserTabletopsService {
 		return await this.tabletopService.removeTableTop(idMe, idTabletop);
 	}
 
-    // async removeAllTables() {
-    //     return await this.tabletopService.removeAllTables();
-    // }
+    async removeAllTables() {
+        return await this.tabletopService.removeAllTables();
+    }
 	async createTabletop(idMe: string, tabletop: TabletopDto): Promise<ITabletop> {
         if (tabletop.name == '') throw new BadRequestException;
 		return await this.tabletopService.createTabletop(idMe, tabletop);

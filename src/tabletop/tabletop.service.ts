@@ -19,7 +19,6 @@ export class TabletopService {
         
         const myTabletops = await this.getCreatedTabletops(idUser);
         const frendlyTabletops = await this.getFrendlyTabletops(idUser);
-
         return myTabletops.concat(frendlyTabletops);
     }
 
@@ -84,8 +83,8 @@ export class TabletopService {
         return tabletop.execPopulate();
     } 
 
-    // async removeAllTables() {
-    //     await this.tabletopModel.find().remove().exec();
-    // }
+    async removeAllTables() {
+        await this.tabletopModel.find().remove().exec();
+    }
 
 }

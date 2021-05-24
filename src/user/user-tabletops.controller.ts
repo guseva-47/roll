@@ -53,7 +53,7 @@ export class UserTabletopsController {
     // @Delete('delete_all_tables')
     // async deleteAllTabletop(): Promise<void> 
     // {
-    //     //return await this.userTabletopsService.removeAllTables();        
+    //     return await this.userTabletopsService.removeAllTables();        
     // }
     
 }

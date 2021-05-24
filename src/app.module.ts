@@ -15,7 +15,7 @@ import { FormulaController } from './formula/formula.controller';
 import { SheetModule } from './sheet/sheet.module';
 import { SheetController } from './sheet/sheet.controller';
 
-const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/nest-write'
+const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/nest-write' // todo вынести в .env
 
 @Module({
     imports: [
