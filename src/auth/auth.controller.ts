@@ -11,7 +11,6 @@ import { AuthService } from './auth.service';
 import { ITokenObject } from './interface/tokens-object.interface';
 import { InvalidRefreshToken } from './exception/invalid-refresh-token.exception';
 import { Request, Response } from 'express';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -66,26 +65,5 @@ export class AuthController {
 
     console.log('logining token payload ');
     console.log(tokens);
-  }
-
-  @Get('/fake')
-  async fake(@Res({ passthrough: true }) res: Response) {
-    const user = {
-      email: 'guseva0797@mail.ru',
-      oauth2Source: 'google',
-    };
-    // const tokens: ITokenObject = await this.authService.login(
-    //   user as CreateUserDto,
-    // );
-
-    // res.cookie('refresh_token', tokens.refresh_token, {
-    //   maxAge: 3600 * 24,
-    //   httpOnly: false,
-    //   // path:'/auth', todo включить после отладки
-    // });
-    // res.header('Authorization', tokens.token_type + ' ' + tokens.access_token);
-    console.log('return res');
-    res.cookie;
-    return 'res';
   }
 }
