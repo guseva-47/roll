@@ -16,7 +16,7 @@ import { SheetModule } from './sheet/sheet.module';
 import { SheetController } from './sheet/sheet.controller';
 
 const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/roll_db' // todo вынести в .env
-// const MONGODB_WRITE_CONNECTION_STRING = 'mongodb+srv://login:password@localhost:27017nest-write'
+// const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://login:password@localhost:27017/roll_db'
 
 @Module({
     imports: [
@@ -25,7 +25,6 @@ const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/roll_db' // t
         MongooseModule.forRoot(
             MONGODB_WRITE_CONNECTION_STRING,
             {
-                // dbName: 'roll_db',
                 useNewUrlParser: true,
                 useUnifiedTopology: true,
                 useFindAndModify: false,
