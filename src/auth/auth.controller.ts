@@ -5,6 +5,7 @@ import {
   Res,
   UseGuards,
   HttpStatus,
+  Post,
 } from '@nestjs/common';
 import { GoogleAuthGuard } from './guard/google-auth.guard';
 import { AuthService } from './auth.service';
@@ -37,19 +38,19 @@ export class AuthController {
     //     signed: false
     // }
     res.cookie('refresh_token', tokens.refresh_token, {
-      maxAge: 3600 * 24,
-      httpOnly: true,
-      // path:'/auth', todo включить после отладки
+      maxAge: 3600000,
+      httpOnly: false,
+      // path:'/auth', //todo включить после отладки
     });
 
-    res.redirect('/ok');
+    res.redirect(process.env.FRONTEND_AUTH_REDIRECT_SUCCESS + tokens.access_token)
   }
 
-  @Get('/refresh-token') // TODO POST!
+  @Post('/refresh-token') // TODO POST!
   async refreshToken(@Req() req: Request, @Res({passthrough:true}) res: Response) {
     // проверить, что рефреш токен 1)есть, 2)устарел
     // вызвать метод обновления токена, как создание, но не нужно изменять время создания
-    console.log('req.cookies');
+    console.log('refreshToken post, req.cookies = ');
     console.log(req.cookies);
     const refreshToken = req.cookies.refresh_token;
     if (typeof refreshToken === 'undefined') throw new InvalidRefreshToken();
@@ -57,11 +58,12 @@ export class AuthController {
     const tokens: ITokenObject = await this.authService.refresh(refreshToken);
 
     res.cookie('refresh_token', tokens.refresh_token, {
-      maxAge: 3600 * 24,
+      maxAge: 3600000,
       httpOnly: false,
       // path:'/auth', todo включить после отладки
     });
-    res.header('Authorization', tokens.token_type + ' ' + tokens.access_token);
+    console.log('Authorization', tokens.access_token);
+    res.send({Authorization: tokens.access_token});
 
     console.log('logining token payload ');
     console.log(tokens);
