@@ -1,12 +1,11 @@
-import { IsEmail, IsNotEmpty } from "class-validator";
-import { genderEnum } from "../enum/gender.enum";
+import { IsEmail, IsNotEmpty } from 'class-validator';
+import { genderEnum } from '../enum/gender.enum';
 
-import { oauth2Source } from "../enum/oauth2-source.enum";
-import { profilePrivatType } from "../enum/profile-privet-type.enum";
-import { roleEnum } from "../enum/role.enum";
+import { oauth2Source } from '../enum/oauth2-source.enum';
+import { profilePrivatType } from '../enum/profile-privet-type.enum';
+import { roleEnum } from '../enum/role.enum';
 
 export class UserDto {
-    
     @IsNotEmpty()
     _id: string;
 

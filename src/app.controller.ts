@@ -1,4 +1,13 @@
-import { Controller, Get, Request, Response, UseGuards, LoggerService, Logger, Query,} from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Request,
+    Response,
+    UseGuards,
+    LoggerService,
+    Logger,
+    Query,
+} from '@nestjs/common';
 
 import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
 import { TrueRandomeService } from './true-randome/true-randome.service';
@@ -7,17 +16,19 @@ import { TrueRandomeService } from './true-randome/true-randome.service';
 
 @Controller()
 export class AppController {
-    private readonly logger: LoggerService = new Logger(AppController.name)
+    private readonly logger: LoggerService = new Logger(AppController.name);
 
-    constructor(
-        private trueRandomeService: TrueRandomeService,
-    ) {}
+    constructor(private trueRandomeService: TrueRandomeService) {}
 
     @Get('rand')
-    async getRandom(@Query() params: {count: string, min: string, max: string}) {
+    async getRandom(@Query() params: { count: string; min: string; max: string }) {
         this.logger.log('getRandom() get запрос на случайные числа.');
 
-        const result = this.trueRandomeService.getNums(Number(params.count), Number(params.min), Number(params.max));
+        const result = this.trueRandomeService.getNums(
+            Number(params.count),
+            Number(params.min),
+            Number(params.max),
+        );
         this.logger.log(`getRandom() возвращение результата ${result}.`);
         return result;
     }
@@ -45,8 +56,7 @@ export class AppController {
 
     @Get('/ping')
     ping(): string {
-        console.log('ping')
+        console.log('ping');
         return 'ping ok';
     }
-    
 }

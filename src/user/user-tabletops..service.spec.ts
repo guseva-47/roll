@@ -13,17 +13,15 @@ class UserServiceMock {
         {
             _id: 'openId',
             profilePrivatType: profilePrivatType.open,
-        }
-        ,
+        },
         {
             _id: 'closedId',
             profilePrivatType: profilePrivatType.closed,
-        }
-    ]
+        },
+    ];
 
-    async getUser(idMe: string, idOther ?: string): Promise<IUser> {
-        if (!idOther)
-            return this.repo.find(item => item._id == idMe) as IUser;
+    async getUser(idMe: string, idOther?: string): Promise<IUser> {
+        if (!idOther) return this.repo.find(item => item._id == idMe) as IUser;
         return this.repo.find(item => item._id == idOther) as IUser;
     }
 }
@@ -31,14 +29,13 @@ class UserServiceMock {
 class TabletopServiceMock {
     private repo = [];
     createTabletop(idUser: string, tabletop: TabletopDto): ITabletop {
-        
         tabletop.owner = idUser;
         tabletop._id = (new Date().getTime() * Math.random()).toString(16);
         this.repo.push(tabletop);
-        return tabletop as ITabletop;     
+        return tabletop as ITabletop;
     }
     getAllTabletops(idUser: string) {
-        return this.repo.filter(table => table.owner == idUser+'');
+        return this.repo.filter(table => table.owner == idUser + '');
     }
     updateTabletop(tabletop: TabletopDto) {
         return tabletop as ITabletop;
@@ -49,7 +46,7 @@ describe('TabletopService', () => {
     let userTabletopsService: UserTabletopsService;
 
     const openUserId = 'openId';
-    const closedUserId = 'closedId'
+    const closedUserId = 'closedId';
 
     beforeEach(async () => {
         const UserServiceProvider = {
@@ -63,8 +60,12 @@ describe('TabletopService', () => {
         };
 
         const moduleRef = await Test.createTestingModule({
-            providers: [UserTabletopsService, UserServiceProvider, TabletopServiceProvider],
-          }).compile();
+            providers: [
+                UserTabletopsService,
+                UserServiceProvider,
+                TabletopServiceProvider,
+            ],
+        }).compile();
 
         userTabletopsService = moduleRef.get<UserTabletopsService>(UserTabletopsService);
     });
@@ -78,33 +79,39 @@ describe('TabletopService', () => {
     });
 
     it('get all tabletops of other user with open profile', async () => {
-        expect(userTabletopsService.getAllTabletops(closedUserId, openUserId)).toBeDefined();
+        expect(
+            userTabletopsService.getAllTabletops(closedUserId, openUserId),
+        ).toBeDefined();
     });
 
     it('get all tabletops of other user with closed profile, expect 403 error', async () => {
-        expect(userTabletopsService.getAllTabletops(closedUserId, openUserId)).rejects.toThrowError(ForbiddenException)
+        expect(
+            userTabletopsService.getAllTabletops(closedUserId, openUserId),
+        ).rejects.toThrowError(ForbiddenException);
     });
 
     it('update tabletop of other user, expected 403 error', async () => {
         const tabletopDto = {
             owner: closedUserId,
             name: 'some name',
-        }
-        expect(userTabletopsService.editTabletop(openUserId, tabletopDto as TabletopDto)).rejects.toThrowError(ForbiddenException)
+        };
+        expect(
+            userTabletopsService.editTabletop(openUserId, tabletopDto as TabletopDto),
+        ).rejects.toThrowError(ForbiddenException);
     });
 
     it('update tabletop with wrong data, expected 400 error', async () => {
         const tabletopDto = {
             owner: openUserId,
-        }
-        expect(userTabletopsService.editTabletop(openUserId, tabletopDto as TabletopDto)).rejects.toThrowError(ForbiddenException)
+        };
+        expect(
+            userTabletopsService.editTabletop(openUserId, tabletopDto as TabletopDto),
+        ).rejects.toThrowError(ForbiddenException);
     });
 
     it('create tabletop with wrong data, expected 400 error', async () => {
-        expect(userTabletopsService.createTabletop(openUserId, {} as TabletopDto)).rejects.toThrowError(ForbiddenException)
+        expect(
+            userTabletopsService.createTabletop(openUserId, {} as TabletopDto),
+        ).rejects.toThrowError(ForbiddenException);
     });
-
-
-
-    
-})
+});

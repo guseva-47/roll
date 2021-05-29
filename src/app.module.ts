@@ -15,21 +15,18 @@ import { FormulaController } from './formula/formula.controller';
 import { SheetModule } from './sheet/sheet.module';
 import { SheetController } from './sheet/sheet.controller';
 
-const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/roll_db' // todo вынести в .env
+const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/roll_db'; // todo вынести в .env
 // const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://login:password@localhost:27017/roll_db'
 
 @Module({
     imports: [
         configModule,
         winstoneConfig,
-        MongooseModule.forRoot(
-            MONGODB_WRITE_CONNECTION_STRING,
-            {
-                useNewUrlParser: true,
-                useUnifiedTopology: true,
-                useFindAndModify: false,
-            }
-        ),
+        MongooseModule.forRoot(MONGODB_WRITE_CONNECTION_STRING, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            useFindAndModify: false,
+        }),
         TabletopModule,
         AuthModule,
         UserModule,
@@ -37,7 +34,13 @@ const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/roll_db' // t
         FormulaModule,
         SheetModule,
     ],
-    controllers: [AppController, UserFriendsController, UserTabletopsController, FormulaController, SheetController, ],
-    providers: [Logger]
+    controllers: [
+        AppController,
+        UserFriendsController,
+        UserTabletopsController,
+        FormulaController,
+        SheetController,
+    ],
+    providers: [Logger],
 })
-export class AppModule { }
+export class AppModule {}

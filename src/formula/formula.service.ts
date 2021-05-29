@@ -1,5 +1,5 @@
-import { Injectable, Logger, LoggerService } from "@nestjs/common";
-import { TrueRandomeService } from "src/true-randome/true-randome.service";
+import { Injectable, Logger, LoggerService } from '@nestjs/common';
+import { TrueRandomeService } from 'src/true-randome/true-randome.service';
 
 import { Formula } from './formula-element/formula';
 
@@ -7,7 +7,7 @@ import { Formula } from './formula-element/formula';
 export class FormulaService {
     private readonly logger: LoggerService = new Logger(FormulaService.name);
 
-    formulBackup; //  class Formula.Momento -- Momento - внутренний класс для Formula
+    formulBackup; // todo можно выпиливать.  class Formula.Momento -- Momento - внутренний класс для Formula
     constructor(private readonly randome: TrueRandomeService) {}
 
     getResult(str: string) {
@@ -17,8 +17,7 @@ export class FormulaService {
         const iter = formula.getIterator();
 
         this.logger.log(`getResult(). Вывод этапов рассчета формулы.`);
-        while (str = iter.getNext())
-            this.logger.log(`${str}`);
+        while ((str = iter.getNext())) this.logger.log(`${str}`);
 
         const result = formula.calculate();
         this.logger.log(`Результат = ${result}`);
@@ -26,14 +25,15 @@ export class FormulaService {
     }
 
     getFormulaBackup(formula: Formula) {
-        this.logger.log('getFormulaBackup(). Создание снимка.')
+        // todo можно выпиливать
+        this.logger.log('getFormulaBackup(). Создание снимка.');
         this.formulBackup = formula.createSnapshot();
     }
 
     setFormulaBack() {
-        this.logger.log('setFormulaBack(). Восстановление формулы по снимку.')
-        if (this.formulBackup)
-            return this.formulBackup.restore();
+        // todo можно выпиливать
+        this.logger.log('setFormulaBack(). Восстановление формулы по снимку.');
+        if (this.formulBackup) return this.formulBackup.restore();
         return null;
     }
 }

@@ -1,7 +1,7 @@
-import { IsEmail, IsNotEmpty } from "class-validator";
-import { genderEnum } from "../enum/gender.enum";
+import { IsEmail, IsNotEmpty } from 'class-validator';
+import { genderEnum } from '../enum/gender.enum';
 
-import { oauth2Source } from "../enum/oauth2-source.enum";
+import { oauth2Source } from '../enum/oauth2-source.enum';
 
 export class CreateUserDto {
     @IsNotEmpty()

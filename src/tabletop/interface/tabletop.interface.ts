@@ -3,7 +3,6 @@ import { Document } from 'mongoose';
 import { IPlayer } from './player.interfase';
 
 export interface ITabletop extends Document {
-    
     readonly name: string;
     readonly gameSessionLink: string;
     readonly owner: string;

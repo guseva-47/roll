@@ -1,3 +1,3 @@
 export enum oauth2Source {
-   google = 'google',
-};
+    google = 'google',
+}

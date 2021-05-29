@@ -12,7 +12,6 @@ import { AuthController } from './auth.controller';
 import { configModule } from 'src/configure.root';
 import { RefreshTokenSchema } from './schema/refresh-token.schema';
 
-
 @Module({
     imports: [
         UsersModule,
@@ -22,10 +21,12 @@ import { RefreshTokenSchema } from './schema/refresh-token.schema';
             secret: process.env.JWT_CONSTANT,
             signOptions: { expiresIn: process.env.JWT_ACCESS_TOKEN_PERIOD },
         }),
-        MongooseModule.forFeature([{ name: 'RefreshTokenSchema', schema: RefreshTokenSchema }]),
+        MongooseModule.forFeature([
+            { name: 'RefreshTokenSchema', schema: RefreshTokenSchema },
+        ]),
     ],
     providers: [AuthService, LocalStrategy, JwtStrategy, GoogleStrategy],
     exports: [AuthService],
     controllers: [AuthController],
 })
-export class AuthModule { }
+export class AuthModule {}

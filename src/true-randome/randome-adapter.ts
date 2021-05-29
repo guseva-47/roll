@@ -1,8 +1,8 @@
-import { Injectable, Logger, LoggerService } from "@nestjs/common";
+import { Injectable, Logger, LoggerService } from '@nestjs/common';
 import random from 'random';
 
 @Injectable()
-export class RandomeAdapter implements IRand{
+export class RandomeAdapter implements IRand {
     private rand;
     private readonly logger: LoggerService = new Logger(RandomeAdapter.name);
 
@@ -11,8 +11,8 @@ export class RandomeAdapter implements IRand{
     }
 
     sowing(seed: string) {
-        this.logger.log('sowing(). Обновление генератора новым зерном.')
-        
+        this.logger.log('sowing(). Обновление генератора новым зерном.');
+
         this.rand = random.clone(seed);
         return this;
     }

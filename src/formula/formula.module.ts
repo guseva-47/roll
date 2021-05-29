@@ -9,4 +9,4 @@ import { FormulaController } from './formula.controller';
     exports: [FormulaService],
     controllers: [FormulaController],
 })
-export class FormulaModule { }
+export class FormulaModule {}
