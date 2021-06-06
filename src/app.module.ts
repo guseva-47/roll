@@ -14,6 +14,9 @@ import { FormulaModule } from './formula/formula.module';
 import { FormulaController } from './formula/formula.controller';
 import { SheetModule } from './sheet/sheet.module';
 import { SheetController } from './sheet/sheet.controller';
+import { NoteModule } from './note/note.module';
+import { UserNotesController } from './user/user-notes.controller';
+import { MessageModule } from './message/message.module';
 
 const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/roll_db'; // todo вынести в .env
 // const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://login:password@localhost:27017/roll_db'
@@ -33,11 +36,14 @@ const MONGODB_WRITE_CONNECTION_STRING = 'mongodb://localhost:27017/roll_db'; // 
         TrueRandomeModule,
         FormulaModule,
         SheetModule,
+        NoteModule,
+        MessageModule
     ],
     controllers: [
         AppController,
         UserFriendsController,
         UserTabletopsController,
+        UserNotesController,
         FormulaController,
         SheetController,
     ],

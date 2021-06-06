@@ -45,8 +45,16 @@ export class UserTabletopsService {
     async removeAllTables() {
         return await this.tabletopService.removeAllTables();
     }
+    
     async createTabletop(idMe: string, tabletop: TabletopDto): Promise<ITabletop> {
         if (tabletop.name == '') throw new BadRequestException();
         return await this.tabletopService.createTabletop(idMe, tabletop);
+    }
+
+    async isUserRelateToTable(idUser: string, idTable: string): Promise<boolean> {
+        const allTables = await this.tabletopService.getAllTabletops(idUser);
+        const i = allTables.findIndex(table => {
+            table._id + '' == idTable });
+        return i != -1;
     }
 }

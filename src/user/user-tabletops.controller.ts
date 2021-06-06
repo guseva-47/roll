@@ -6,6 +6,7 @@ import {
     Param,
     Post,
     Put,
+    Query,
     Request,
     UseGuards,
 } from '@nestjs/common';
@@ -20,13 +21,29 @@ import { UserTabletopsService } from './user-tabletops.service';
 export class UserTabletopsController {
     constructor(private userTabletopsService: UserTabletopsService) {}
 
-    @Get(':id/tabletops')
-    async getAllTabletops(@Param('id') idSomeUser: string, @Request() req) {
-        const idMe = req.user.id;
-        if (idMe === idSomeUser)
-            return await this.userTabletopsService.getAllTabletops(idMe);
+    // @Get(':id/tabletops')
+    // async getAllTabletops(@Param('id') idSomeUser: string, @Request() req) {
+    //     const idMe = req.user.id;
+    //     if (idMe === idSomeUser)
+    //         return await this.userTabletopsService.getAllTabletops(idMe);
 
-        return await this.userTabletopsService.getAllTabletops(idMe, idSomeUser);
+    //     return await this.userTabletopsService.getAllTabletops(idMe, idSomeUser);
+    // }
+    @Get(':id/tabletops')
+    async getLastTabletops(
+        @Param('id') idSomeUser: string,
+        @Request() req,
+        @Query() count?: number,
+    ): Promise<ITabletop[]> {
+        const idMe = req.user.id;
+        let tables: ITabletop[] = [];
+        if (idMe === idSomeUser)
+            tables = await this.userTabletopsService.getAllTabletops(idMe);
+        else
+            tables = await this.userTabletopsService.getAllTabletops(idMe, idSomeUser);
+
+        count = (count < tables.length) ? count : tables.length;
+        return tables.slice(0, count)
     }
 
     @Get('tabletops/:idTable')
