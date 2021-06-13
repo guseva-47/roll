@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { TabletopDto } from './dto/tabletop.dto';
+import { gameRole } from './enum/game-role.enum';
 import { BadId } from './exseption/bad-id.exception';
 import { TabletopNotFound } from './exseption/tabletop-undefind.exception';
 import { ITabletop } from './interface/tabletop.interface';
@@ -24,13 +25,13 @@ export class TabletopService {
     async getTabletop(idUser: string, idTabletop: string): Promise<ITabletop> {
         const tabletop = await this._checkTable(idTabletop);
 
-        const owner = tabletop.owner + '';
-        const user = idUser + '';
+        return tabletop;
+        // const owner = tabletop.owner + '';
+        // const user = idUser + '';
+        // if (owner === user || tabletop.players.find(player => player.user === idUser))
+        //     return tabletop;
 
-        if (owner === user || tabletop.players.find(player => player.user === idUser))
-            return tabletop;
-
-        throw new ForbiddenException();
+        // throw new ForbiddenException();
     }
 
     async getCreatedTabletops(idUser: string): Promise<Array<ITabletop>> {
@@ -38,7 +39,21 @@ export class TabletopService {
     }
 
     async getFrendlyTabletops(idUser: string): Promise<Array<ITabletop>> {
-        return this.tabletopModel.find({ user: idUser });
+        // TODO BAG вернее костыль
+        const all = await this.tabletopModel.find();
+        let tables = all.filter(table => {
+            return idUser + '' != table.owner + '';
+        });
+        tables = tables.filter(table => {
+            if (table.players.length < 1) return false;
+            const player = table.players.find(player => player.user + '' == idUser);
+            return typeof player != undefined;
+        });
+
+        return tables;
+        return this.tabletopModel.find({
+            players: { user: idUser, role: gameRole.player },
+        });
     }
 
     async createTabletop(idUser: string, tabletop: TabletopDto): Promise<ITabletop> {
@@ -86,5 +101,16 @@ export class TabletopService {
             .find()
             .remove()
             .exec();
+    }
+
+    async joinUsers(idUsers: string[], idTabletop: string): Promise<ITabletop> {
+        const tabletop = await this._checkTable(idTabletop);
+        idUsers.forEach(idUser => {
+            const alredyUser = tabletop.players.find(player => player.user == idUser);
+            if (typeof alredyUser == 'undefined')
+                tabletop.players.push({ role: gameRole.player, user: idUser });
+        });
+
+        return await tabletop.save();
     }
 }

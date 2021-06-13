@@ -29,6 +29,11 @@ export class UserTabletopsService {
     }
 
     async getTabletop(idMe: string, idTabletop: string): Promise<ITabletop> {
+        const owner = (await this.tabletopService.getTabletop(idMe, idTabletop)).owner;
+        if (owner + '' == idMe) return this.tabletopService.getTabletop(idMe, idTabletop);
+        if (!this.userService.isOpenProfileTo(owner, idMe))
+            throw new ForbiddenException();
+
         return this.tabletopService.getTabletop(idMe, idTabletop);
     }
 
@@ -45,7 +50,7 @@ export class UserTabletopsService {
     async removeAllTables() {
         return await this.tabletopService.removeAllTables();
     }
-    
+
     async createTabletop(idMe: string, tabletop: TabletopDto): Promise<ITabletop> {
         if (tabletop.name == '') throw new BadRequestException();
         return await this.tabletopService.createTabletop(idMe, tabletop);
@@ -54,7 +59,31 @@ export class UserTabletopsService {
     async isUserRelateToTable(idUser: string, idTable: string): Promise<boolean> {
         const allTables = await this.tabletopService.getAllTabletops(idUser);
         const i = allTables.findIndex(table => {
-            table._id + '' == idTable });
+            table._id + '' == idTable;
+        });
         return i != -1;
+    }
+
+    async joinUsers(
+        idMe: string,
+        usersToJoin: string[],
+        idTabletop: string,
+    ): Promise<ITabletop> {
+        // имею ли я права добавлять пользователей
+        const table = await this.tabletopService.getTabletop(idMe, idTabletop);
+        const owner = table.owner;
+        if (owner + '' !== idMe) {
+            if (!this.userService.isOpenProfileTo(owner, idMe))
+                throw new ForbiddenException();
+        }
+
+        // составить список пользователей, которые имеют право присоединяться к столу
+        const approvedUsers = usersToJoin.filter(
+            async idUser => await this.userService.isOpenProfileTo(owner, idUser),
+        );
+
+        if(approvedUsers.length < 1) return table;
+
+        return this.tabletopService.joinUsers(approvedUsers, idTabletop);
     }
 }

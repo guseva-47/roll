@@ -80,4 +80,20 @@ export class UserService {
             .remove()
             .exec();
     }
+    async isOpenProfileTo(user: string, guest: string): Promise<boolean> {
+        if (!Types.ObjectId.isValid(user)) throw new BadId();
+        if (!Types.ObjectId.isValid(guest)) throw new BadId();
+
+        if (user == guest) return true;
+
+        const userPromise = await this.userModel
+            .findById(user)
+            .orFail(new UserNotFound());
+        const userFromDB = await userPromise.execPopulate();
+
+        return (
+            userFromDB.profilePrivatType === profilePrivatType.closed &&
+            !userFromDB.subscribers.includes(guest)
+        );
+    }
 }
