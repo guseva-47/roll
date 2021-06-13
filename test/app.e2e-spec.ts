@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configModule } from 'src/configure.root';
 
@@ -28,19 +28,21 @@ describe('AppController (e2e)', () => {
     });
 
     describe('redirecting to google for login', () => {
-
         it('/login (GET)', async () => {
             await request(app.getHttpServer())
                 .get('/login')
                 .expect(302)
-                .expect('location', '/auth/google')
+                .expect('location', '/auth/google');
         });
 
         it('/auth/google (GET)', async () => {
             await request(app.getHttpServer())
                 .get('/auth/google')
                 .expect(302)
-                .expect('location', /https:\/\/accounts\.google\.com\/o\/oauth2\/v2\/auth*/)
+                .expect(
+                    'location',
+                    /https:\/\/accounts\.google\.com\/o\/oauth2\/v2\/auth*/,
+                );
         });
 
         it('/login (GET) with redirect', async () => {
@@ -48,26 +50,26 @@ describe('AppController (e2e)', () => {
                 .get('/login')
                 .expect(302)
                 .redirects(1)
-                .expect(302)
+                .expect(302);
         });
     });
 
     describe('random', () => {
         it('', async () => {
             const params = {
-                count: '6', 
-                min: '1', 
+                count: '6',
+                min: '1',
                 max: '20',
-            }
+            };
 
             await request(app.getHttpServer())
                 .get('/rand')
-                .send({count: params.count, min: params.min, max: params.max})
+                .send({ count: params.count, min: params.min, max: params.max })
                 .set('Accept', 'application/json')
-                .expect(200)
-        })
-    })
-    
+                .expect(200);
+        });
+    });
+
     afterAll(async () => {
         await app.close();
     });
