@@ -58,9 +58,7 @@ export class UserTabletopsService {
 
     async isUserRelateToTable(idUser: string, idTable: string): Promise<boolean> {
         const allTables = await this.tabletopService.getAllTabletops(idUser);
-        const i = allTables.findIndex(table => {
-            table._id + '' == idTable;
-        });
+        const i = allTables.findIndex(table => table._id + '' == idTable);
         return i != -1;
     }
 
@@ -82,7 +80,7 @@ export class UserTabletopsService {
             async idUser => await this.userService.isOpenProfileTo(owner, idUser),
         );
 
-        if(approvedUsers.length < 1) return table;
+        if (approvedUsers.length < 1) return table;
 
         return this.tabletopService.joinUsers(approvedUsers, idTabletop);
     }

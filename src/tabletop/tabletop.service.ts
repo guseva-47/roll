@@ -47,13 +47,13 @@ export class TabletopService {
         tables = tables.filter(table => {
             if (table.players.length < 1) return false;
             const player = table.players.find(player => player.user + '' == idUser);
-            return typeof player != undefined;
+            return typeof player != 'undefined';
         });
 
         return tables;
-        return this.tabletopModel.find({
-            players: { user: idUser, role: gameRole.player },
-        });
+        // return this.tabletopModel.find({
+        //     players: { user: idUser, role: gameRole.player },
+        // });
     }
 
     async createTabletop(idUser: string, tabletop: TabletopDto): Promise<ITabletop> {

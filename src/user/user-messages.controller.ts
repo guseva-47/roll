@@ -18,9 +18,7 @@ export class UserMessagesController {
     }
 
     @Delete(':id')
-    async deleteMessage(@Param('id') idMessage: string, @Request() req): Promise<IMessage> {
-        const idMe = req.user.id;
+    async deleteMessage(@Param('id') idMessage: string): Promise<IMessage> {
         return this.userMessagesService.removeMessage(idMessage);
     }
-
 }
