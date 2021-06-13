@@ -39,11 +39,10 @@ export class UserTabletopsController {
         let tables: ITabletop[] = [];
         if (idMe === idSomeUser)
             tables = await this.userTabletopsService.getAllTabletops(idMe);
-        else
-            tables = await this.userTabletopsService.getAllTabletops(idMe, idSomeUser);
+        else tables = await this.userTabletopsService.getAllTabletops(idMe, idSomeUser);
 
-        count = (count < tables.length) ? count : tables.length;
-        return tables.slice(0, count)
+        count = count < tables.length ? count : tables.length;
+        return tables.slice(0, count);
     }
 
     @Get('tabletops/:idTable')
@@ -80,6 +79,16 @@ export class UserTabletopsController {
     ): Promise<ITabletop> {
         const idMe = req.user.id;
         return await this.userTabletopsService.createTabletop(idMe, tabletopDto);
+    }
+
+    @Post('tabletops/:idTable/join')
+    async joinToTable(
+        @Param('idTable') idTable: string,
+        @Body() users: string[],
+        @Request() req,
+    ): Promise<ITabletop> {
+        const idMe = req.user.id;
+        return await this.userTabletopsService.joinUsers(idMe, users, idTable);
     }
 
     // @Delete('delete_all_tables')
