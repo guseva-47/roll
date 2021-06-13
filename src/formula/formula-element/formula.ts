@@ -6,15 +6,13 @@ import { Dice } from './dice';
 import { Disadventage } from './disadventage';
 import { Div } from './div';
 import { FewDices } from './few-dices.class';
-import { IPrototype } from './interface/IPrototype';
-import { FormulaStageIter } from './iterator/formula-stage.iterator';
 import { Mult } from './mult';
 import { Pow } from './pow';
 import { Sub } from './sub';
 import { Sum } from './sum';
 
 @Injectable()
-export class Formula implements IIterable, IPrototype {
+export class Formula {
     private sourceStr: string;
     private postfixNotation: Array<string>;
     private formulComposite: IValue;
@@ -23,25 +21,13 @@ export class Formula implements IIterable, IPrototype {
 
     private readonly logger: LoggerService = new Logger(Formula.name);
 
-    constructor(
-        randome: IRand,
-        sourceStr: string,
-        prototypeData?: {
-            postfixNotation: Array<string>;
-            formulComposite: IValue;
-        },
-    ) {
+    constructor(randome: IRand, sourceStr: string) {
         this.randome = randome;
         this.sourceStr = sourceStr;
 
-        if (prototypeData) {
-            this.postfixNotation = prototypeData.postfixNotation.slice();
-            this.formulComposite = prototypeData.formulComposite.clone();
-        } else {
-            const expr = this._stringToExpr(this.sourceStr);
-            this.postfixNotation = this._convert(expr);
-            this.formulComposite = this._createFormula(this.postfixNotation);
-        }
+        const expr = this._stringToExpr(this.sourceStr);
+        this.postfixNotation = this._convert(expr);
+        this.formulComposite = this._createFormula(this.postfixNotation);
     }
 
     calculate(): number {
@@ -183,61 +169,5 @@ export class Formula implements IIterable, IPrototype {
     setRandomiser(newRand: IRand) {
         this.randome = newRand;
         this.formulComposite = new Formula(newRand, this.sourceStr).formulComposite;
-    }
-
-    getIterator(): IIterator {
-        // todo можно выпиливать
-        return new FormulaStageIter(this.postfixNotation);
-    }
-
-    clone(): Formula {
-        // todo можно выпиливать
-        this.logger.log('clone()');
-        return new Formula(this.randome, this.sourceStr, {
-            postfixNotation: this.postfixNotation,
-            formulComposite: this.formulComposite,
-        });
-    }
-
-    private Memento = class {
-        // todo можно выпиливать
-        readonly formulComposite: IValue;
-        readonly postfixNotation: Array<string>;
-
-        constructor(
-            readonly formula: Formula,
-            formulComposite: IValue,
-            readonly sourceStr: string,
-            postfixNotation: Array<string>,
-            readonly randome: IRand,
-        ) {
-            formula.logger.log('Memento(). конструктор снимка.');
-            this.formulComposite = formulComposite.clone();
-            this.postfixNotation = postfixNotation.slice();
-        }
-
-        restore() {
-            this.formula.logger.log(
-                'Memento.restore(). Восстановление формулы по снимку.',
-            );
-            this.formula.formulComposite = this.formulComposite;
-            this.formula.sourceStr = this.sourceStr;
-            this.formula.postfixNotation = this.postfixNotation;
-            this.formula.randome = this.randome;
-            return this.formula;
-        }
-    };
-
-    createSnapshot() {
-        // todo можно выпиливать
-        this.logger.log('createSnapshot(). Создание снимка.');
-
-        return new this.Memento(
-            this,
-            this.formulComposite,
-            this.sourceStr,
-            this.postfixNotation,
-            this.randome,
-        );
     }
 }
