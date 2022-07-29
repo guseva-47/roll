@@ -34,7 +34,7 @@
         "cookie-parser": "^1.4.5",
         "moment": "^2.29.1",
         "mongodb-memory-server": "^6.9.3",
-        "mongoose": "^5.10.10",
+        "mongoose": "^6.4.6",
         "nest-winston": "^1.4.0",
         "passport": "^0.4.1",
         "passport-google-oauth20": "^2.0.0",
