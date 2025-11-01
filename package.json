@@ -30,7 +30,7 @@
         "@nestjs/platform-express": "^7.0.0",
         "@nestjs/swagger": "^4.6.1",
         "axios": "^0.21.0",
-        "class-validator": "^0.12.2",
+        "class-validator": "^0.13.0",
         "cookie-parser": "^1.4.5",
         "moment": "^2.29.1",
         "mongodb-memory-server": "^6.9.3",
